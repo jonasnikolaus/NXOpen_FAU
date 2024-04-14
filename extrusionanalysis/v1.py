@@ -1,6 +1,7 @@
 import NXOpen
 import NXOpen.Features
 
+
 def list_extrusions_and_heights():
     theSession = NXOpen.Session.GetSession()
     workPart = theSession.Parts.Work
@@ -8,23 +9,21 @@ def list_extrusions_and_heights():
 
     lw.Open()
 
-    # Alle Features durchgehen und nach Extrusionsfeatures suchen
     for feature in workPart.Features:
-        # Hier prüfen wir, ob das Feature vom Typ Extrude ist
         if isinstance(feature, NXOpen.Features.Extrude):
             lw.WriteLine("Extrude Feature gefunden: " + feature.JournalIdentifier)
             extrude = feature
-            # Erstellen eines Builders, um die Extrusionsdetails zu erhalten
-            builder = workPart.Features.CreateExtrudeBuilder(feature)
+            builder = workPart.Features.CreateExtrudeBuilder(extrude)
             try:
-                # Versuch, die Extrusionshöhe zu bestimmen
+                # Extrahiere die numerischen Werte der Expression Objekte für Start und Ende
                 start_value = builder.Limits.StartExtend.Value
                 end_value = builder.Limits.EndExtend.Value
                 lw.WriteLine(f"Startdistanz der Extrusion: {start_value}")
                 lw.WriteLine(f"Enddistanz der Extrusion: {end_value}")
                 lw.WriteLine(f"Extrusionshöhe: {abs(end_value - start_value)}")
+            except Exception as e:
+                lw.WriteLine("Fehler beim Auswerten der Extrusionsgrenzen: " + str(e))
             finally:
-                # Sicherstellen, dass der Builder zerstört wird
                 builder.Destroy()
     lw.Close()
 
