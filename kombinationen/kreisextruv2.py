@@ -19,6 +19,23 @@ def edge_type_to_string(edge_type):
     }
     return edge_type_mapping.get(edge_type, f"Unknown Type: {edge_type}")
 
+def face_type_to_string(face_type):
+    face_type_mapping = {
+        NXOpen.Face.FaceType.Rubber: "Rubber",
+        NXOpen.Face.FaceType.Planar: "Planar",
+        NXOpen.Face.FaceType.Cylindrical: "Cylindrical",
+        NXOpen.Face.FaceType.Conical: "Conical",
+        NXOpen.Face.FaceType.Spherical: "Spherical",
+        NXOpen.Face.FaceType.SurfaceOfRevolution: "Surface of Revolution",
+        NXOpen.Face.FaceType.Parametric: "Parametric",
+        NXOpen.Face.FaceType.Blending: "Blending",
+        NXOpen.Face.FaceType.Offset: "Offset",
+        NXOpen.Face.FaceType.Swept: "Swept",
+        NXOpen.Face.FaceType.Convergent: "Convergent",
+        NXOpen.Face.FaceType.Undefined: "Undefined"
+    }
+    return face_type_mapping.get(face_type, f"Unknown Type: {face_type}")
+
 def list_features_and_geometries():
     theSession = NXOpen.Session.GetSession()
     workPart = theSession.Parts.Work
@@ -39,7 +56,7 @@ def list_features_and_geometries():
         lw.WriteLine("Journal Identifier: " + body.JournalIdentifier)
 
         for face in body.GetFaces():
-            lw.WriteLine("Flächentyp: " + str(face.FaceType).split('.')[-1])
+            lw.WriteLine("Flächentyp: " + face_type_to_string(face.SolidFaceType))
             edges = face.GetEdges()
             lw.WriteLine("Anzahl der Kanten: " + str(len(edges)))
 
