@@ -3,8 +3,21 @@ import NXOpen.Features
 import math
 
 def edge_type_to_string(edge_type):
-    # Diese Methode gibt einfach den Namen des Enums zurück, der immer vorhanden sein sollte
-    return str(edge_type)
+    edge_type_mapping = {
+        NXOpen.EdgeEdgeType.Rubber: "Rubber",
+        NXOpen.EdgeEdgeType.Linear: "Linear",
+        NXOpen.EdgeEdgeType.Circular: "Circular",
+        NXOpen.EdgeEdgeType.Elliptical: "Elliptical",
+        NXOpen.EdgeEdgeType.Intersection: "Intersection",
+        NXOpen.EdgeEdgeType.Spline: "Spline",
+        NXOpen.EdgeEdgeType.SpCurve: "SP Curve",
+        NXOpen.EdgeEdgeType.Foreign: "Foreign",
+        NXOpen.EdgeEdgeType.ConstantParameter: "Constant Parameter",
+        NXOpen.EdgeEdgeType.TrimmedCurve: "Trimmed Curve",
+        NXOpen.EdgeEdgeType.Convergent: "Convergent",
+        NXOpen.EdgeEdgeType.Undefined: "Undefined"
+    }
+    return edge_type_mapping.get(edge_type, f"Unknown Type: {edge_type}")
 
 def list_features_and_geometries():
     theSession = NXOpen.Session.GetSession()
