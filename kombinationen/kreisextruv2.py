@@ -42,6 +42,11 @@ def list_features_and_geometries():
 
     lw.Open()
 
+    # Header for the body count section
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Körper und Geometrien")
+    lw.WriteLine("=" * 50)
+
     # Zählen der Körper
     body_count = 0
     for body in workPart.Bodies:
@@ -50,44 +55,47 @@ def list_features_and_geometries():
 
     processed_edges = set()  # Ein Set, um bereits verarbeitete Kanten zu speichern
 
-    for body in workPart.Bodies:
-        lw.WriteLine("Körper wird inspiziert: " + body.Name)
-        lw.WriteLine("Journal Identifier: " + body.JournalIdentifier)
+    for body_idx, body in enumerate(workPart.Bodies, start=1):
+        lw.WriteLine("-" * 50)
+        lw.WriteLine(f"Körper {body_idx}/{body_count} wird inspiziert: {body.Name}")
+        lw.WriteLine(f"Journal Identifier: {body.JournalIdentifier}")
 
-        for face in body.GetFaces():
-            lw.WriteLine("Flächentyp: " + face_type_to_string(face.SolidFaceType))
+        for face_idx, face in enumerate(body.GetFaces(), start=1):
+            lw.WriteLine(f"  Fläche {face_idx}: Typ - {face_type_to_string(face.SolidFaceType)}")
             edges = face.GetEdges()
-            lw.WriteLine("Anzahl der Kanten: " + str(len(edges)))
+            lw.WriteLine(f"  Anzahl der Kanten: {len(edges)}")
 
-            for edge in edges:
-                if edge not in processed_edges:
-                    processed_edges.add(edge)
-                    edge_type_name = edge_type_to_string(edge.SolidEdgeType)
-                    lw.WriteLine("Kantentyp: " + edge_type_name)
-                    lw.WriteLine("Kantenlänge (Umfang): " + str(edge.GetLength()))
+            for edge_idx, edge in enumerate(edges, start=1):
+                edge_type_name = edge_type_to_string(edge.SolidEdgeType)
+                lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge (Umfang) - {edge.GetLength():.3f}")
 
-                    if edge.SolidEdgeType == NXOpen.Edge.EdgeType.Circular:
-                        circumference = edge.GetLength()
-                        radius = circumference / (2 * math.pi)
-                        diameter = 2 * radius
-                        lw.WriteLine("Radius des Kreises: {0:.3f}".format(radius))
-                        lw.WriteLine("Durchmesser des Kreises: {0:.3f}".format(diameter))
+                if edge.SolidEdgeType == NXOpen.Edge.EdgeType.Circular:
+                    circumference = edge.GetLength()
+                    radius = circumference / (2 * math.pi)
+                    diameter = 2 * radius
+                    lw.WriteLine(f"    Radius des Kreises: {radius:.3f}")
+                    lw.WriteLine(f"    Durchmesser des Kreises: {diameter:.3f}")
+            lw.WriteLine("\n")
+            
+# Now listing extrude features with better formatting
+        lw.WriteLine("\nExtrude Features:")
+        for feature in workPart.Features:
+            if isinstance(feature, NXOpen.Features.Extrude):
+                lw.WriteLine(f"  {feature.JournalIdentifier}:")
+                extrude = feature
+                builder = workPart.Features.CreateExtrudeBuilder(extrude)
+                try:
+                    start_value = float(builder.Limits.StartExtend.Value.RightHandSide)
+                    end_value = float(builder.Limits.EndExtend.Value.RightHandSide)
+                    lw.WriteLine(f"    Startdistanz der Extrusion: {start_value}")
+                    lw.WriteLine(f"    Enddistanz der Extrusion: {end_value}")
+                    lw.WriteLine(f"    Extrusionshöhe: {abs(end_value - start_value)}")
+                except Exception as e:
+                    lw.WriteLine(f"    Fehler beim Auswerten der Extrusionsgrenzen: {e}")
+                finally:
+                    builder.Destroy()
 
-    for feature in workPart.Features:
-        if isinstance(feature, NXOpen.Features.Extrude):
-            lw.WriteLine("Extrude Feature gefunden: " + feature.JournalIdentifier)
-            extrude = feature
-            builder = workPart.Features.CreateExtrudeBuilder(extrude)
-            try:
-                start_value = float(builder.Limits.StartExtend.Value.RightHandSide)
-                end_value = float(builder.Limits.EndExtend.Value.RightHandSide)
-                lw.WriteLine(f"Startdistanz der Extrusion: {start_value}")
-                lw.WriteLine(f"Enddistanz der Extrusion: {end_value}")
-                lw.WriteLine(f"Extrusionshöhe: {abs(end_value - start_value)}")
-            except Exception as e:
-                lw.WriteLine("Fehler beim Auswerten der Extrusionsgrenzen: " + str(e))
-            finally:
-                builder.Destroy()
+        lw.WriteLine("\n")
 
     lw.Close()
 
@@ -107,8 +115,14 @@ def list_geometry_properties_in_sketches():
     lw = theSession.ListingWindow
     lw.Open()
 
-    for sketch in workPart.Sketches:
-        lw.WriteLine(f"Skizze: {sketch.Name}")
+    # Header for the sketch analysis section
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Skizzen")
+    lw.WriteLine("=" * 50)
+
+
+    for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
+        lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
         all_edges = []
         circles = []
 
@@ -117,6 +131,8 @@ def list_geometry_properties_in_sketches():
                 circles.append(curve)
             elif isinstance(curve, NXOpen.Line):
                 all_edges.append(curve)
+
+        lw.WriteLine("\n")
 
         # Suche nach Rechtecken
         if len(all_edges) >= 4:
