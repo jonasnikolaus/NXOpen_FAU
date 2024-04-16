@@ -80,6 +80,33 @@ def print_extrude_details(lw, feature):
     finally:
         builder.Destroy()
 
+def print_hole_details(lw, feature):
+    lw.WriteLine(f"  {feature.JournalIdentifier}:")
+    hole = feature
+    builder = workPart.Features.CreateHoleFeatureBuilder(hole)
+    try:
+        diameter = builder.Diameter.Expression
+        depth = builder.Depth.Expression
+        hole_type = builder.Subtype
+        lw.WriteLine(f"    Bohrungsdurchmesser: {diameter}")
+        lw.WriteLine(f"    Bohrungstiefe: {depth}")
+        
+        # Prüfen, ob es sich um eine Senkung oder eine Aufweitung handelt und entsprechend drucken
+        if hole_type == NXOpen.Features.HoleFeatureBuilderHoleSubtype.Countersink:
+            countersink_diameter = builder.CountersinkDiameter.Expression
+            countersink_angle = builder.CountersinkAngle.Expression
+            lw.WriteLine(f"    Senkungsdurchmesser: {countersink_diameter}")
+            lw.WriteLine(f"    Senkungswinkel: {countersink_angle}")
+        elif hole_type == NXOpen.Features.HoleFeatureBuilderHoleSubtype.Counterbore:
+            counterbore_diameter = builder.CounterboreDiameter.Expression
+            counterbore_depth = builder.CounterboreDepth.Expression
+            lw.WriteLine(f"    Aufweitdurchmesser: {counterbore_diameter}")
+            lw.WriteLine(f"    Aufweittiefe: {counterbore_depth}")
+    except Exception as e:
+        lw.WriteLine(f"    Fehler beim Auswerten der Bohrungsdetails: {e}")
+    finally:
+        builder.Destroy()
+
 def print_sketch_details(lw, sketch, sketch_idx):
     lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
     all_edges = []
@@ -138,12 +165,18 @@ def list_features_and_geometries(theSession, workPart):
 
     for body_idx, body in enumerate(workPart.Bodies, start=1):
         print_body_details(lw, body, body_idx, body_count)
-        lw.WriteLine("\nExtrude Features:")
-        for feature in workPart.Features:
-            if isinstance(feature, NXOpen.Features.Extrude):
-                print_extrude_details(lw, feature)
+    
+    lw.WriteLine("\nFeature-Analyse:")
+    for feature in workPart.Features:
+        lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
+        if isinstance(feature, NXOpen.Features.Extrude):
+            print_extrude_details(lw, feature)
+        elif isinstance(feature, NXOpen.Features.Hole):
+            lw.WriteLine("Bohrungsfeature gefunden!")
+            print_hole_details(lw, feature)
 
     lw.Close()
+
 
 def list_geometry_properties_in_sketches(theSession, workPart):
     lw = theSession.ListingWindow
