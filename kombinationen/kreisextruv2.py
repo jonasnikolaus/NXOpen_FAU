@@ -21,7 +21,6 @@ def edge_type_to_string(edge_type):
 
 def face_type_to_string(face_type):
     face_type_mapping = {
-        NXOpen.Face.FaceType.Rubber: "Rubber",
         NXOpen.Face.FaceType.Planar: "Planar",
         NXOpen.Face.FaceType.Cylindrical: "Cylindrical",
         NXOpen.Face.FaceType.Conical: "Conical",
@@ -92,7 +91,17 @@ def list_features_and_geometries():
 
     lw.Close()
 
-def list_circle_properties_in_sketches():
+def is_rectangle(edges):
+    if len(edges) != 4:
+        return False
+    # Sortiere die Kanten nach Länge
+    sorted_edges = sorted(edges, key=lambda e: e.GetLength())
+    # Prüfe, ob zwei Paare von Kanten jeweils gleich lang sind
+    if math.isclose(sorted_edges[0].GetLength(), sorted_edges[1].GetLength()) and math.isclose(sorted_edges[2].GetLength(), sorted_edges[3].GetLength()):
+        return True
+    return False
+
+def list_geometry_properties_in_sketches():
     theSession = NXOpen.Session.GetSession()
     workPart = theSession.Parts.Work
     lw = theSession.ListingWindow
@@ -100,14 +109,32 @@ def list_circle_properties_in_sketches():
 
     for sketch in workPart.Sketches:
         lw.WriteLine(f"Skizze: {sketch.Name}")
+        all_edges = []
+        circles = []
+
         for curve in sketch.GetAllGeometry():
             if isinstance(curve, NXOpen.Arc):
-                lw.WriteLine(f"Kreis gefunden in Skizze: {sketch.Name}")
-                lw.WriteLine(f"Radius: {curve.Radius:.3f}")
-                lw.WriteLine(f"Mittelpunkt: ({curve.CenterPoint.X:.3f}, {curve.CenterPoint.Y:.3f}, {curve.CenterPoint.Z:.3f})")
-    
+                circles.append(curve)
+            elif isinstance(curve, NXOpen.Line):
+                all_edges.append(curve)
+
+        # Suche nach Rechtecken
+        if len(all_edges) >= 4:
+            # Prüfe jede mögliche Kombination von vier Kanten
+            from itertools import combinations
+            for combo in combinations(all_edges, 4):
+                if is_rectangle(combo):
+                    lengths = sorted([e.GetLength() for e in combo])
+                    lw.WriteLine(f"Rechteck gefunden in Skizze: {sketch.Name}")
+                    lw.WriteLine(f"Seitenlängen: {lengths[0]:.3f}, {lengths[2]:.3f} (Länge, Breite)")
+
+        for circle in circles:
+            lw.WriteLine(f"Kreis gefunden in Skizze: {sketch.Name}")
+            lw.WriteLine(f"Radius: {circle.Radius:.3f}")
+            lw.WriteLine(f"Mittelpunkt: ({circle.CenterPoint.X:.3f}, {circle.CenterPoint.Y:.3f}, {circle.CenterPoint.Z:.3f})")
+
     lw.Close()
 
 if __name__ == '__main__':
     list_features_and_geometries()
-    list_circle_properties_in_sketches()
+    list_geometry_properties_in_sketches()
