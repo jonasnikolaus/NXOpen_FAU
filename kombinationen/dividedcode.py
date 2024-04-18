@@ -138,8 +138,6 @@ def print_hole_details(lw, feature, workPart):
         hole_builder.Destroy()
 
 
-
-
 def print_revolve_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Revolved Feature: {feature.JournalIdentifier}")
     revolve = feature
@@ -197,7 +195,7 @@ def analyze_sketch_geometry(lw, all_edges, circles, sketch):
         print_circle_details(lw, circle, sketch)
 
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
-    from itertools import combinations
+    #from itertools import combinations
     for combo in combinations(all_edges, 4):
         if is_rectangle(combo):
             print_rectangle_details(lw, combo, sketch)
@@ -228,7 +226,7 @@ def list_features_and_geometries(theSession, workPart):
     lw.WriteLine("Analyse der Körper und Geometrien")
     lw.WriteLine("=" * 50)
 
-    feature_collection = workPart.Features
+ #   feature_collection = workPart.Features
 
     body_count = 0
     for body in workPart.Bodies:
@@ -249,7 +247,6 @@ def list_features_and_geometries(theSession, workPart):
             print_hole_details(lw, feature, workPart)
 
     lw.Close()
-
 
 def list_geometry_properties_in_sketches(theSession, workPart):
     lw = theSession.ListingWindow
