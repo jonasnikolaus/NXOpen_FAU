@@ -53,10 +53,16 @@ def print_face_details(lw, face, face_idx):
     lw.WriteLine("\n")
 
 def print_edge_details(lw, edge, edge_idx):
-    edge_type_name = edge_type_to_string(edge.SolidEdgeType)
-    lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge (Umfang) - {edge.GetLength():.3f}")
-    if edge.SolidEdgeType == NXOpen.Edge.EdgeType.Circular:
+    if isinstance(edge, NXOpen.Line):
+        edge_type_name = "Linear"
+        lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge - {edge.GetLength():.3f}")
+    elif isinstance(edge, NXOpen.Arc):
+        edge_type_name = "Circular"
+        lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge (Umfang) - {edge.GetLength():.3f}")
         print_circular_edge_details(lw, edge)
+    else:
+        edge_type_name = "Unbekannter Typ"
+        lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge - {edge.GetLength():.3f}")
 
 def print_circular_edge_details(lw, edge):
     circumference = edge.GetLength()
@@ -187,29 +193,42 @@ def process_geometry(curve, all_edges, circles):
         all_edges.append(curve)
 
 def analyze_sketch_geometry(lw, all_edges, circles, sketch):
+    found_rectangles = []
+    found_circles = []
+
     # Check for rectangles
     if len(all_edges) >= 4:
-        analyze_edges_for_rectangle(lw, all_edges, sketch)
+        found_rectangles = analyze_edges_for_rectangle(lw, all_edges, sketch)
+
     # Process circles
     for circle in circles:
         print_circle_details(lw, circle, sketch)
+        found_circles.append(circle)
+
+    # Output all other edges that are not part of any rectangle or circle
+    for edge in all_edges:
+        if edge not in found_rectangles:
+            print_edge_details(lw, edge, all_edges.index(edge) + 1)
 
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
-    #from itertools import combinations
+    found_edges = []
     for combo in combinations(all_edges, 4):
         if is_rectangle(combo):
             print_rectangle_details(lw, combo, sketch)
+            found_edges.extend(combo)
+    return found_edges
 
 def print_circle_details(lw, circle, sketch):
     lw.WriteLine(f"Kreis gefunden in Skizze: {sketch.Name}")
     lw.WriteLine(f"Radius: {circle.Radius:.3f}")
     lw.WriteLine(f"Mittelpunkt: ({circle.CenterPoint.X:.3f}, {circle.CenterPoint.Y:.3f}, {circle.CenterPoint.Z:.3f})")
+    return circle
 
 def print_rectangle_details(lw, rectangle_edges, sketch):
     lengths = sorted([edge.GetLength() for edge in rectangle_edges])
     lw.WriteLine(f"Rechteck gefunden in Skizze: {sketch.Name}")
     lw.WriteLine(f"Seitenlängen: {lengths[0]:.3f}, {lengths[2]:.3f} (Länge, Breite)")
-
+    return rectangle_edges
 def is_rectangle(edges):
     # Sort the edges by length
     sorted_edges = sorted(edges, key=lambda e: e.GetLength())
