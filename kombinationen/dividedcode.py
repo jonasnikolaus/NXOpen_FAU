@@ -80,62 +80,78 @@ def print_extrude_details(lw, feature):
     finally:
         builder.Destroy()
 
-def print_hole_details(session, work_part):
-    lw = session.ListingWindow
-    lw.Open()
-    lw.WriteLine("Starting to list hole features and their details...")
+def print_hole_details(lw, feature, workPart):
+    lw.WriteLine(f"Analyzing Hole Feature: {feature.JournalIdentifier}")
+    try:
+        # Create the HolePackageBuilder
+        hole_builder = workPart.Features.CreateHolePackageBuilder(feature)
 
-    for feature in work_part.Features:
-        # Access FeatureType as a property, not as a method
-        feature_type = feature.FeatureType
-        if 'HOLE' in feature_type.upper():  # Correctly accessing the feature type as a property
-            try:
-                hole_builder = work_part.Features.CreateHoleFeatureBuilder(feature)
-                lw.WriteLine(f"Feature ID: {feature.JournalIdentifier} - Hole Feature")
+        # Fetch and display various properties
+        hole_depth_expr = hole_builder.GeneralSimpleHoleDepth
+        hole_depth = hole_depth_expr.RightHandSide if hole_depth_expr else "Undefined"
 
-                # Assuming the HoleFeatureBuilder has been correctly initialized
-                diameter = hole_builder.Diameter.Expression if hole_builder.Diameter else "Undefined"
-                depth = hole_builder.Depth.Expression if hole_builder.Depth else "Undefined"
-                tip_angle = hole_builder.TipAngle.Expression if hole_builder.TipAngle else "Undefined"
+        hole_diameter_expr = hole_builder.GeneralSimpleHoleDiameter
+        hole_diameter = hole_diameter_expr.RightHandSide if hole_diameter_expr else "Undefined"
 
-                # Print the properties
-                lw.WriteLine(f"  Diameter: {diameter}")
-                lw.WriteLine(f"  Depth: {depth}")
-                lw.WriteLine(f"  Tip Angle: {tip_angle}")
+        # Fetch type, boolean operation, general hole form, and counterbore details
+        hole_type = hole_builder.Type
+        boolean_operation = hole_builder.BooleanOperation
+        general_hole_form = hole_builder.GeneralHoleForm
 
-                # Clean up
-                hole_builder.Destroy()
+        lw.WriteLine(f"  Hole Depth: {hole_depth}")
+        lw.WriteLine(f"  Hole Diameter: {hole_diameter}")
+        lw.WriteLine(f"  Type: {hole_type}")
+        lw.WriteLine(f"  Boolean Operation: {boolean_operation}")
+        lw.WriteLine(f"  General Hole Form: {general_hole_form}")
 
-            except Exception as e:
-                lw.WriteLine(f"Error accessing hole feature details: {str(e)}")
+        # Counterbore details
+        if hole_builder.GeneralCounterboreDiameter:
+            counterbore_diameter_expr = hole_builder.GeneralCounterboreDiameter
+            counterbore_diameter = counterbore_diameter_expr.RightHandSide
+            lw.WriteLine(f"  Counterbore Diameter: {counterbore_diameter}")
 
-    lw.WriteLine("Completed listing hole features.")
-    lw.Close()
+        if hole_builder.GeneralCounterboreDepth:
+            counterbore_depth_expr = hole_builder.GeneralCounterboreDepth
+            counterbore_depth = counterbore_depth_expr.RightHandSide
+            lw.WriteLine(f"  Counterbore Depth: {counterbore_depth}")
 
-def print_revolve_details(lw, feature):
+    except Exception as e:
+        lw.WriteLine(f"Error analyzing hole feature details: {str(e)}")
+    finally:
+        # Always destroy the builder to release resources
+        hole_builder.Destroy()
+
+
+
+
+def print_revolve_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Revolved Feature: {feature.JournalIdentifier}")
     revolve = feature
     try:
         revolve_builder = workPart.Features.CreateRevolveBuilder(revolve)
         
-        # Access the Axis property correctly
+        # Access and print details from the Axis property
         axis = revolve_builder.Axis
         if axis:
-            lw.WriteLine(f"  Axis: Direction - {axis.Direction}, Point - {axis.Point}")
+            direction_vector = axis.Direction.Vector  # Accessing the vector
+            point_coordinates = axis.Point.Coordinates  # Correctly accessing the coordinates of the point
+            lw.WriteLine(f"  Axis: Direction - X: {direction_vector.X}, Y: {direction_vector.Y}, Z: {direction_vector.Z}, Point - X: {point_coordinates.X}, Y: {point_coordinates.Y}, Z: {point_coordinates.Z}")
         else:
             lw.WriteLine("  Axis: Not available")
 
-        # Access and log the properties of the StartExtend and EndExtend
+        # Handle StartExtend and EndExtend properties
         limits = revolve_builder.Limits
         if limits:
             start_extend = limits.StartExtend
             end_extend = limits.EndExtend
-            lw.WriteLine(f"  Start Extend Value: {start_extend.Value}")
-            lw.WriteLine(f"  End Extend Value: {end_extend.Value}")
+            start_value = start_extend.Value.RightHandSide if start_extend.Value else "Undefined"
+            end_value = end_extend.Value.RightHandSide if end_extend.Value else "Undefined"
+            lw.WriteLine(f"  Start Extend Value: {start_value}")
+            lw.WriteLine(f"  End Extend Value: {end_value}")
         else:
             lw.WriteLine("  Limits: Not available")
         
-        # Access tolerance correctly
+        # Access and print tolerance
         tolerance = revolve_builder.Tolerance
         lw.WriteLine(f"  Tolerance: {tolerance}")
         
@@ -211,10 +227,10 @@ def list_features_and_geometries(theSession, workPart):
         lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
         if isinstance(feature, NXOpen.Features.Extrude):
             print_extrude_details(lw, feature)
-        if isinstance(feature, NXOpen.Features.Revolve):
-            print_revolve_details(lw, feature)#, feature_collection)
-        #elif isinstance(feature, NXOpen.Features.HolePackage):
-         #   print_hole_details(lw, workPart)
+        elif isinstance(feature, NXOpen.Features.Revolve):
+            print_revolve_details(lw, feature, workPart)
+        elif isinstance(feature, NXOpen.Features.HolePackage):
+            print_hole_details(lw, feature, workPart)
 
     lw.Close()
 

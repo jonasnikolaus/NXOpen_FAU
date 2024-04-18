@@ -1,26 +1,31 @@
-def print_revolve_details(lw, feature):
+def print_revolve_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Revolved Feature: {feature.JournalIdentifier}")
-    revolve=feature
+    revolve = feature
     try:
-        revolve_builder = workPart.CreateRevolveBuilder(revolve)
+        revolve_builder = workPart.Features.CreateRevolveBuilder(revolve)
         
-        # Access the Axis property correctly
-        try:
-            revolve_builder.Axis
-            axis = revolve_builder.Axis()
-            if axis:
-                lw.WriteLine(f"  Axis: Direction - {axis}")
-         
-                lw.WriteLine("  Axis: Not available")
-  
+        # Access and print details from the Axis property
+        axis = revolve_builder.Axis
+        if axis:
+            direction_vector = axis.Direction.Vector  # Accessing the vector
+            point_coordinates = axis.Point.Coordinates  # Correctly accessing the coordinates of the point
+            lw.WriteLine(f"  Axis: Direction - X: {direction_vector.X}, Y: {direction_vector.Y}, Z: {direction_vector.Z}, Point - X: {point_coordinates.X}, Y: {point_coordinates.Y}, Z: {point_coordinates.Z}")
+        else:
+            lw.WriteLine("  Axis: Not available")
 
-        # Access limits correctly
-        if revolve_builder.Limits:
-            limits = revolve_builder.Limits()
-            lw.WriteLine(f"  Start Limit: {limits}")
-            lw.WriteLine(f"  End Limit: {limits.End}")
+        # Handle StartExtend and EndExtend properties
+        limits = revolve_builder.Limits
+        if limits:
+            start_extend = limits.StartExtend
+            end_extend = limits.EndExtend
+            start_value = start_extend.Value.RightHandSide if start_extend.Value else "Undefined"
+            end_value = end_extend.Value.RightHandSide if end_extend.Value else "Undefined"
+            lw.WriteLine(f"  Start Extend Value: {start_value}")
+            lw.WriteLine(f"  End Extend Value: {end_value}")
+        else:
+            lw.WriteLine("  Limits: Not available")
         
-        # Access tolerance correctly
+        # Access and print tolerance
         tolerance = revolve_builder.Tolerance
         lw.WriteLine(f"  Tolerance: {tolerance}")
         
@@ -28,18 +33,3 @@ def print_revolve_details(lw, feature):
         lw.WriteLine(f"  Error analyzing revolve details: {str(e)}")
     finally:
         revolve_builder.Destroy()
-
-def print_extrude_details(lw, feature):
-    lw.WriteLine(f"  {feature.JournalIdentifier}:")
-    extrude = feature
-    builder = workPart.Features.CreateExtrudeBuilder(extrude)
-    try:
-        start_value = float(builder.Limits.StartExtend.Value.RightHandSide)
-        end_value = float(builder.Limits.EndExtend.Value.RightHandSide)
-        lw.WriteLine(f"    Startdistanz der Extrusion: {start_value}")
-        lw.WriteLine(f"    Enddistanz der Extrusion: {end_value}")
-        lw.WriteLine(f"    Extrusionshöhe: {abs(end_value - start_value)}")
-    except Exception as e:
-        lw.WriteLine(f"    Fehler beim Auswerten der Extrusionsgrenzen: {e}")
-    finally:
-        builder.Destroy()
