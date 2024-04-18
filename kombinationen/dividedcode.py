@@ -149,36 +149,48 @@ def print_revolve_details(lw, feature, workPart):
     revolve = feature
     try:
         revolve_builder = workPart.Features.CreateRevolveBuilder(revolve)
-        
-        # Access and print details from the Axis property
+
+        # Zugriff auf die Achse und ihre Details
         axis = revolve_builder.Axis
         if axis:
-            direction_vector = axis.Direction.Vector  # Accessing the vector
-            point_coordinates = axis.Point.Coordinates  # Correctly accessing the coordinates of the point
+            direction_vector = axis.Direction.Vector
+            point_coordinates = axis.Point.Coordinates
             lw.WriteLine(f"  Axis: Direction - X: {direction_vector.X}, Y: {direction_vector.Y}, Z: {direction_vector.Z}, Point - X: {point_coordinates.X}, Y: {point_coordinates.Y}, Z: {point_coordinates.Z}")
-        else:
-            lw.WriteLine("  Axis: Not available")
 
-        # Handle StartExtend and EndExtend properties
+        # Start und Ende der Begrenzungen
         limits = revolve_builder.Limits
         if limits:
-            start_extend = limits.StartExtend
-            end_extend = limits.EndExtend
-            start_value = start_extend.Value.RightHandSide if start_extend.Value else "Undefined"
-            end_value = end_extend.Value.RightHandSide if end_extend.Value else "Undefined"
+            start_value = limits.StartExtend.Value.RightHandSide if limits.StartExtend.Value else "Undefined"
+            end_value = limits.EndExtend.Value.RightHandSide if limits.EndExtend.Value else "Undefined"
             lw.WriteLine(f"  Start Extend Value: {start_value}")
             lw.WriteLine(f"  End Extend Value: {end_value}")
-        else:
-            lw.WriteLine("  Limits: Not available")
-        
-        # Access and print tolerance
+
+        # Zugriff auf die Toleranz
         tolerance = revolve_builder.Tolerance
         lw.WriteLine(f"  Tolerance: {tolerance}")
-        
+
+        # Zugriff auf die Section und deren Geometrie
+        section = revolve_builder.Section
+        if section:
+            curves = section.GetOutputCurves()
+            lw.WriteLine("  Section Curves:")
+            for curve in curves:
+                curve_type = type(curve).Name
+                lw.WriteLine(f"    Curve Type: {curve_type}")
+                if isinstance(curve, NXOpen.Arc):
+                    lw.WriteLine(f"    Arc Center: {curve.CenterPoint.X}, {curve.CenterPoint.Y}, {curve.CenterPoint.Z}")
+                    lw.WriteLine(f"    Radius: {curve.Radius}")
+                elif isinstance(curve, NXOpen.Line):
+                    lw.WriteLine(f"    Line Start Point: {curve.StartPoint.X}, {curve.StartPoint.Y}, {curve.StartPoint.Z}")
+                    lw.WriteLine(f"    Line End Point: {curve.EndPoint.X}, {curve.EndPoint.Y}, {curve.EndPoint.Z}")
+        else:
+            lw.WriteLine("  No Section available for this revolve")
+
     except Exception as e:
         lw.WriteLine(f"  Error analyzing revolve details: {str(e)}")
     finally:
         revolve_builder.Destroy()
+
 
 
 def print_sketch_details(lw, sketch, sketch_idx):
