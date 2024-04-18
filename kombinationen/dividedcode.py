@@ -144,6 +144,7 @@ def print_hole_details(lw, feature, workPart):
         hole_builder.Destroy()
 
 
+
 def print_revolve_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Revolved Feature: {feature.JournalIdentifier}")
     revolve = feature
@@ -267,7 +268,9 @@ def list_features_and_geometries(theSession, workPart):
     for body_idx, body in enumerate(workPart.Bodies, start=1):
         print_body_details(lw, body, body_idx, body_count)
     
-    lw.WriteLine("\nFeature-Analyse:")
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Feature-Analyse:")
+    lw.WriteLine("=" * 50)
     for feature in workPart.Features:
         lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
         if isinstance(feature, NXOpen.Features.Extrude):
