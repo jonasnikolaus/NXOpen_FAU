@@ -118,8 +118,7 @@ def print_hole_details(lw, feature, workPart):
         lw.WriteLine(f"  Hole Diameter: {hole_diameter}")
         lw.WriteLine(f"  Type: {hole_type_descriptions.get(hole_type, 'Unknown Type')}")
         lw.WriteLine(f"  Boolean Operation: {boolean_operation}")
-        lw.WriteLine(f"  General Hole Form: {hole_form_descriptions.get(general_hole_form, 'Unknown Form')}")
-
+        lw.WriteLine(f"  General Hole Form: {hole_form_descriptions.get((general_hole_form), 'Unknown Form')}")
 
         # Counterbore details
         if hole_builder.GeneralCounterboreDiameter:
