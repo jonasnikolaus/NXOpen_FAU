@@ -98,11 +98,28 @@ def print_hole_details(lw, feature, workPart):
         boolean_operation = hole_builder.BooleanOperation
         general_hole_form = hole_builder.GeneralHoleForm
 
+        # Enum mapping
+        hole_type_descriptions = {
+            0: "General Hole",
+            1: "Drill Size Hole",
+            2: "Screw Clearance Hole",
+            3: "Threaded Hole",
+            4: "Hole Series"
+        }
+        
+        hole_form_descriptions = {
+            0: "Simple",
+            1: "Counterbored",
+            2: "Countersink",
+            3: "Tapered"
+        }
+
         lw.WriteLine(f"  Hole Depth: {hole_depth}")
         lw.WriteLine(f"  Hole Diameter: {hole_diameter}")
-        lw.WriteLine(f"  Type: {hole_type}")
+        lw.WriteLine(f"  Type: {hole_type_descriptions.get(hole_type, 'Unknown Type')}")
         lw.WriteLine(f"  Boolean Operation: {boolean_operation}")
-        lw.WriteLine(f"  General Hole Form: {general_hole_form}")
+        lw.WriteLine(f"  General Hole Form: {hole_form_descriptions.get(general_hole_form, 'Unknown Form')}")
+
 
         # Counterbore details
         if hole_builder.GeneralCounterboreDiameter:
