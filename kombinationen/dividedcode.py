@@ -183,8 +183,12 @@ def print_revolve_details(lw, feature, workPart):
                     lw.WriteLine(f"    Arc Center: {curve.CenterPoint.X}, {curve.CenterPoint.Y}, {curve.CenterPoint.Z}")
                     lw.WriteLine(f"    Radius: {curve.Radius}")
                 elif isinstance(curve, NXOpen.Line):
-                    lw.WriteLine(f"    Line Start Point: {curve.StartPoint.X}, {curve.StartPoint.Y}, {curve.StartPoint.Z}")
-                    lw.WriteLine(f"    Line End Point: {curve.EndPoint.X}, {curve.EndPoint.Y}, {curve.EndPoint.Z}")
+                    start_point = curve.StartPoint
+                    end_point = curve.EndPoint
+                    line_length = math.sqrt((end_point.X - start_point.X) ** 2 + (end_point.Y - start_point.Y) ** 2 + (end_point.Z - start_point.Z) ** 2)
+                    lw.WriteLine(f"    Line Start Point: {start_point.X}, {start_point.Y}, {start_point.Z}")
+                    lw.WriteLine(f"    Line End Point: {end_point.X}, {end_point.Y}, {end_point.Z}")
+                    lw.WriteLine(f"    Line Length: {line_length:.3f}")
         else:
             lw.WriteLine("  No Section available for this revolve")
 
