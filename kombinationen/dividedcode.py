@@ -72,18 +72,42 @@ def print_circular_edge_details(lw, edge):
     lw.WriteLine(f"    Radius des Kreises: {radius:.3f}")
     lw.WriteLine(f"    Durchmesser des Kreises: {diameter:.3f}")
 
-def print_extrude_details(lw, feature):
-    lw.WriteLine(f"  {feature.JournalIdentifier}:")
+def print_extrude_details(lw, feature, workPart):
+    lw.WriteLine(f"Analyzing Extrude Feature: {feature.JournalIdentifier}")
     extrude = feature
     builder = workPart.Features.CreateExtrudeBuilder(extrude)
     try:
+        # Basic properties of the extrude
         start_value = float(builder.Limits.StartExtend.Value.RightHandSide)
         end_value = float(builder.Limits.EndExtend.Value.RightHandSide)
-        lw.WriteLine(f"    Startdistanz der Extrusion: {start_value}")
-        lw.WriteLine(f"    Enddistanz der Extrusion: {end_value}")
-        lw.WriteLine(f"    Extrusionshöhe: {abs(end_value - start_value)}")
+        lw.WriteLine(f"  Start Distance of Extrusion: {start_value}")
+        lw.WriteLine(f"  End Distance of Extrusion: {end_value}")
+        lw.WriteLine(f"  Extrusion Height: {abs(end_value - start_value)}")
+
+        # Accessing the section and its geometry
+        section = builder.Section
+        if section:
+            curves = section.GetOutputCurves()
+            lw.WriteLine("  Section Curves:")
+            for curve in curves:
+                curve_type = type(curve).__name__  # Using __name__ to get the type as a string
+                lw.WriteLine(f"    Curve Type: {curve_type}")
+                if isinstance(curve, NXOpen.Line):
+                    start_point = curve.StartPoint
+                    end_point = curve.EndPoint
+                    line_length = math.sqrt((end_point.X - start_point.X)**2 + (end_point.Y - start_point.Y)**2 + (end_point.Z - start_point.Z)**2)
+                    lw.WriteLine(f"    Line Start Point: {start_point.X}, {start_point.Y}, {start_point.Z}")
+                    lw.WriteLine(f"    Line End Point: {end_point.X}, {end_point.Y}, {end_point.Z}")
+                    lw.WriteLine(f"    Line Length: {line_length:.3f}")
+                elif isinstance(curve, NXOpen.Arc):
+                    center = curve.CenterPoint
+                    lw.WriteLine(f"    Arc Center: {center.X}, {center.Y}, {center.Z}")
+                    lw.WriteLine(f"    Radius: {curve.Radius}")
+        else:
+            lw.WriteLine("  No Section available for this extrude")
+
     except Exception as e:
-        lw.WriteLine(f"    Fehler beim Auswerten der Extrusionsgrenzen: {e}")
+        lw.WriteLine(f"  Error analyzing extrude details: {str(e)}")
     finally:
         builder.Destroy()
 
@@ -312,7 +336,7 @@ def list_features_and_geometries(theSession, workPart):
     for feature in workPart.Features:
         lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
         if isinstance(feature, NXOpen.Features.Extrude):
-            print_extrude_details(lw, feature)
+            print_extrude_details(lw, feature, workPart)
         elif isinstance(feature, NXOpen.Features.Revolve):
             print_revolve_details(lw, feature, workPart)
         elif isinstance(feature, NXOpen.Features.HolePackage):
