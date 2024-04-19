@@ -1,37 +1,27 @@
-# NXOpen Python API Beispiel
+# NXOpen Python-Integration
 
-Dieses Repository enthält Python-Skripte, die die NXOpen API von Siemens NX verwenden, um Informationen über die Geometrie und die Features eines Teils in NX zu extrahieren.
+Dieses Repository enthält Skripte, die die NXOpen API für die Automatisierung von Designaufgaben in Siemens NX verwenden. Der Code ermöglicht es, verschiedene Eigenschaften von Körpern, Skizzen und Features in einer NX-Sitzung zu analysieren und zu drucken.
 
-## Beschreibung
+## Übersicht
 
-Die Skripte wurden entwickelt, um mit Siemens NX, einer führenden CAD/CAM/CAE-Software, zu arbeiten. Die NXOpen API ermöglicht es, auf Funktionen und Geometrie zuzugreifen und sie zu manipulieren.
+Das Skript setzt voraus, dass Siemens NX installiert und korrekt konfiguriert ist, um Python-Skripte auszuführen. Es verwendet die NXOpen Python-API, um Zugriff auf die Modellierungskomponenten zu erhalten und Details zu diesen Komponenten systematisch auszugeben.
 
-Die Hauptfunktionen der Skripte sind:
+### Hauptfunktionen
 
-- Extraktion von Informationen über Körper, Flächen und Kanten
-- Analyse von Extrusionsfeatures
-- Erfassung von Eigenschaften von Kreisen in Skizzen
+- **Körperdetails**: Listet Informationen zu allen Körpern in einem Teil auf, einschließlich ihrer Flächen und der Kanten jeder Fläche.
+- **Skizzendetails**: Analysiert alle Skizzen, um spezifische Kantenlängen und Muster zu überprüfen.
+- **Feature-Analyse**: Gibt Details zu bestimmten Features wie Extrusionen, Bohrungen und Rotationen aus.
+  
+### Besondere Merkmale
 
-## Voraussetzungen
+- **Fehlerprüfung**: Der Code handhabt Fehler und unerwartete Werte während des Zugriffs auf die Eigenschaften der Modellelemente.
+- **Detaillierte Ausgabe**: Für jedes Feature und jede geometrische Komponente werden detaillierte technische Daten bereitgestellt, die für die Überprüfung und Analyse nützlich sind.
 
-Um diese Skripte auszuführen, benötigen Sie:
+### Anwendungsszenarien
 
-- Siemens NX installiert und lizenziert
-- Python 3.x
-- NXOpen Python API
+- **Automatisierte Qualitätssicherung**: Automatische Überprüfung von Maßen und Geometrien gegen vorgegebene Spezifikationen.
+- **Dokumentationserstellung**: Generieren von Berichten über die verwendeten Features und Komponenten in einem Modell.
 
-## Verwendung
+### Nutzung
 
-1. Laden Sie die Skripte herunter und speichern Sie sie auf Ihrem lokalen System.
-2. Öffnen Sie ein Terminal oder eine Befehlszeile und navigieren Sie zum Verzeichnis, in dem die Skripte gespeichert sind.
-3. Führen Sie das Hauptskript aus, indem Sie den folgenden Befehl eingeben:
-
-   ```bash
-   python main.py
-   ```
-
-   Dadurch werden die Skripte ausgeführt und Informationen über die Geometrie und Features des aktuellen NX-Teils ausgegeben.
-
-## Anpassung
-
-Die Skripte können angepasst werden, um spezifische Informationen zu extrahieren oder Aktionen auf Basis Ihrer Anforderungen auszuführen. Sie können neue Funktionen hinzufügen oder bestehende Funktionen modifizieren, um den Workflow anzupassen.
+Um das Skript auszuführen, starten Sie Ihre NX-Sitzung und laden Sie das Python-Skript in die NX-Umgebung. Das Skript beginnt mit der Analyse der aktuellen Arbeitssitzung und gibt seine Ergebnisse in das NX Listing Window aus.

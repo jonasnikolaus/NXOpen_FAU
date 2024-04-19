@@ -3,6 +3,7 @@ import NXOpen.Features
 import math
 from itertools import combinations
 
+# Konvertiert Edge-Typen in lesbare Strings
 def edge_type_to_string(edge_type):
     edge_type_mapping = {
         NXOpen.EdgeEdgeType.Rubber: "Rubber",
@@ -20,6 +21,7 @@ def edge_type_to_string(edge_type):
     }
     return edge_type_mapping.get(edge_type, f"Unknown Type: {edge_type}")
 
+# Konvertiert Face-Typen in lesbare Strings
 def face_type_to_string(face_type):
     face_type_mapping = {
         NXOpen.Face.FaceType.Rubber: "Rubber",
@@ -37,6 +39,7 @@ def face_type_to_string(face_type):
     }
     return face_type_mapping.get(face_type, f"Unknown Type: {face_type}")
 
+# Gibt Details eines Körpers aus
 def print_body_details(lw, body, body_idx, body_count):
     lw.WriteLine("-" * 50)
     lw.WriteLine(f"Körper {body_idx}/{body_count} wird inspiziert: {body.Name}")
@@ -44,6 +47,7 @@ def print_body_details(lw, body, body_idx, body_count):
     for face_idx, face in enumerate(body.GetFaces(), start=1):
         print_face_details(lw, face, face_idx)
 
+# Gibt Details einer Fläche aus
 def print_face_details(lw, face, face_idx):
     lw.WriteLine(f"  Fläche {face_idx}: Typ - {face_type_to_string(face.SolidFaceType)}")
     edges = face.GetEdges()
@@ -52,6 +56,7 @@ def print_face_details(lw, face, face_idx):
         print_edge_details(lw, edge, edge_idx)
     lw.WriteLine("\n")
 
+# Gibt Details einer Kante aus
 def print_edge_details(lw, edge, edge_idx):
     # Bestimme den Typ der Kante basierend auf der Instanzklasse
     if isinstance(edge, NXOpen.Line):
@@ -65,6 +70,7 @@ def print_edge_details(lw, edge, edge_idx):
         edge_type_name = "Unbekannter Typ"
         lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge - {edge.GetLength():.3f}")
 
+# Gibt Details einer kreisförmigen Kante aus
 def print_circular_edge_details(lw, edge):
     circumference = edge.GetLength()
     radius = circumference / (2 * math.pi)
@@ -72,6 +78,7 @@ def print_circular_edge_details(lw, edge):
     lw.WriteLine(f"    Radius des Kreises: {radius:.3f}")
     lw.WriteLine(f"    Durchmesser des Kreises: {diameter:.3f}")
 
+# Analyse und Ausgabe der Details einer Extrusionsfunktion
 def print_extrude_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Extrude Feature: {feature.JournalIdentifier}")
     extrude = feature
@@ -111,6 +118,7 @@ def print_extrude_details(lw, feature, workPart):
     finally:
         builder.Destroy()
 
+# Analyse und Ausgabe der Details einer Bohrfunktion
 def print_hole_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Hole Feature: {feature.JournalIdentifier}")
     try:
@@ -168,8 +176,7 @@ def print_hole_details(lw, feature, workPart):
         # Always destroy the builder to release resources
         hole_builder.Destroy()
 
-
-
+# Analyse und Ausgabe der Details einer Rotationsfunktion
 def print_revolve_details(lw, feature, workPart):
     lw.WriteLine(f"Analyzing Revolved Feature: {feature.JournalIdentifier}")
     revolve = feature
@@ -222,7 +229,6 @@ def print_revolve_details(lw, feature, workPart):
         revolve_builder.Destroy()
 
 
-
 def print_sketch_details(lw, sketch, sketch_idx):
     lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
     #all_edges = []
@@ -234,11 +240,13 @@ def process_geometry(curve, all_edges, circles):
     elif isinstance(curve, NXOpen.Line):
         all_edges.append(curve)
 
+# Berechnet, ob spezifische Kantenlängen vorhanden sind
 def check_specific_edge_lengths(all_edges):
     required_lengths = [22.5, 11.0, 10.5, 5.0, 12.0, 16.0]
     found_lengths = [edge.GetLength() for edge in all_edges]
     return all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths) for required in required_lengths)
 
+# Überprüft, ob ein Musterfeature vorhanden ist
 def check_pattern_feature(all_edges):
     required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
     # Erstellen eines Dictionarys zur Überwachung der erforderlichen Häufigkeiten
@@ -259,6 +267,7 @@ def check_pattern_feature(all_edges):
             return False
     return True
 
+# Analysiert Geometrien in Skizzen
 def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     found_rectangles = []
     found_circles = []
@@ -285,7 +294,7 @@ def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     # Prüfung für Musterfeature
     check_pattern_feature(lw, found_lengths)
 
-
+# Analysiert Kanten für Rechtecke
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
     for combo in combinations(all_edges, 4):
@@ -294,18 +303,21 @@ def analyze_edges_for_rectangle(lw, all_edges, sketch):
             found_edges.extend(combo)
     return found_edges
 
+# Gibt Details eines Kreises aus
 def print_circle_details(lw, circle, sketch):
     lw.WriteLine(f"Kreis gefunden in Skizze: {sketch.Name}")
     lw.WriteLine(f"Radius: {circle.Radius:.3f}")
     lw.WriteLine(f"Mittelpunkt: ({circle.CenterPoint.X:.3f}, {circle.CenterPoint.Y:.3f}, {circle.CenterPoint.Z:.3f})")
     return circle
 
+# Gibt Details eines Rechtecks aus
 def print_rectangle_details(lw, rectangle_edges, sketch):
     lengths = sorted([edge.GetLength() for edge in rectangle_edges])
     lw.WriteLine(f"Rechteck gefunden in Skizze: {sketch.Name}")
     lw.WriteLine(f"Seitenlängen: {lengths[0]:.3f}, {lengths[2]:.3f} (Länge, Breite)")
     return rectangle_edges
 
+# Überprüft, ob die gegebenen Kanten ein Rechteck bilden
 def is_rectangle(edges):
     # Sort the edges by length
     sorted_edges = sorted(edges, key=lambda e: e.GetLength())
@@ -314,6 +326,7 @@ def is_rectangle(edges):
         return True
     return False
 
+# Listet Merkmale und Geometrien auf
 def list_features_and_geometries(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
@@ -344,6 +357,7 @@ def list_features_and_geometries(theSession, workPart):
 
     lw.Close()
 
+# Listet Geometrieeigenschaften in Skizzen auf
 def list_geometry_properties_in_sketches(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
