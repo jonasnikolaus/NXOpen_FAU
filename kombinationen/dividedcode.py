@@ -205,9 +205,32 @@ def process_geometry(curve, all_edges, circles):
     elif isinstance(curve, NXOpen.Line):
         all_edges.append(curve)
 
+def check_specific_edge_lengths(lw, found_lengths):
+    # Spezifische Längen, die gefunden werden sollen
+    required_lengths = [22.5, 11.0, 10.5, 5.0, 12.0, 16.0]
+    
+    # Ein Set für gefundene Längen, umgenauigkeiten in den Längenberechnungen berücksichtigen
+    found_lengths_set = {round(length, 1) for length in found_lengths}  # Rundung auf eine Dezimalstelle
+
+    # Prüfen, ob alle benötigten Längen im gefundenen Set sind
+    if all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths_set) for required in required_lengths):
+        lw.WriteLine("=" * 50)
+        lw.WriteLine("Grundlagenübungsprüfung:")
+        lw.WriteLine("=" * 50)
+        lw.WriteLine("Erzeugung Grundkörper:")
+        lw.WriteLine("Rotationsfeature: JA, Maße sind richtig.")
+    else:
+        lw.WriteLine("=" * 50)
+        lw.WriteLine("Grundlagenprüfung:")
+        lw.WriteLine("=" * 50)
+        lw.WriteLine("Erzeugung Grundkörper:")
+        lw.WriteLine("Rotationsfeature: NEIN")
+
 def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     found_rectangles = []
     found_circles = []
+    # Liste für gefundene Kantenlängen
+    found_lengths = []
 
     # Check for rectangles
     if len(all_edges) >= 4:
@@ -218,10 +241,15 @@ def analyze_sketch_geometry(lw, all_edges, circles, sketch):
         print_circle_details(lw, circle, sketch)
         found_circles.append(circle)
 
-    # Output all other edges that are not part of any rectangle or circle
+    # Prüfen und Speichern der Längen aller Kanten
     for edge in all_edges:
+        length = edge.GetLength()
+        found_lengths.append(length)
         if edge not in found_rectangles:
             print_edge_details(lw, edge, all_edges.index(edge) + 1)
+
+    # Überprüfung der spezifischen Kantenlängen
+    check_specific_edge_lengths(lw, found_lengths)
 
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
@@ -242,6 +270,7 @@ def print_rectangle_details(lw, rectangle_edges, sketch):
     lw.WriteLine(f"Rechteck gefunden in Skizze: {sketch.Name}")
     lw.WriteLine(f"Seitenlängen: {lengths[0]:.3f}, {lengths[2]:.3f} (Länge, Breite)")
     return rectangle_edges
+
 def is_rectangle(edges):
     # Sort the edges by length
     sorted_edges = sorted(edges, key=lambda e: e.GetLength())
