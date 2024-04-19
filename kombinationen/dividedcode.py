@@ -53,6 +53,7 @@ def print_face_details(lw, face, face_idx):
     lw.WriteLine("\n")
 
 def print_edge_details(lw, edge, edge_idx):
+    # Bestimme den Typ der Kante basierend auf der Instanzklasse
     if isinstance(edge, NXOpen.Line):
         edge_type_name = "Linear"
         lw.WriteLine(f"    Kante {edge_idx}: Typ - {edge_type_name}, Länge - {edge.GetLength():.3f}")
@@ -196,8 +197,8 @@ def print_revolve_details(lw, feature, workPart):
 
 def print_sketch_details(lw, sketch, sketch_idx):
     lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
-    all_edges = []
-    circles = []
+    #all_edges = []
+    #circles = []
 
 def process_geometry(curve, all_edges, circles):
     if isinstance(curve, NXOpen.Arc):
@@ -205,37 +206,30 @@ def process_geometry(curve, all_edges, circles):
     elif isinstance(curve, NXOpen.Line):
         all_edges.append(curve)
 
-def check_specific_edge_lengths(lw, found_lengths):
-    # Spezifische Längen, die gefunden werden sollen
+def check_specific_edge_lengths(all_edges):
     required_lengths = [22.5, 11.0, 10.5, 5.0, 12.0, 16.0]
-    
-    # Ein Set für gefundene Längen, umgenauigkeiten in den Längenberechnungen berücksichtigen
-    found_lengths_set = {round(length, 1) for length in found_lengths}  # Rundung auf eine Dezimalstelle
+    found_lengths = [edge.GetLength() for edge in all_edges]
+    return all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths) for required in required_lengths)
 
-    # Prüfen, ob alle benötigten Längen im gefundenen Set sind
-    if all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths_set) for required in required_lengths):
-        lw.WriteLine("=" * 50)
-        lw.WriteLine("Grundlagenübungsprüfung:")
-        lw.WriteLine("=" * 50)
-        lw.WriteLine("Erzeugung Grundkörper:")
-        lw.WriteLine("Rotationsfeature: JA, Maße sind richtig.")
-    else:
-        lw.WriteLine("=" * 50)
-        lw.WriteLine("Grundlagenprüfung:")
-        lw.WriteLine("=" * 50)
-        lw.WriteLine("Erzeugung Grundkörper:")
-        lw.WriteLine("Rotationsfeature: NEIN")
-
-def check_pattern_feature(lw, found_lengths):
-    # Längen, die für das Musterfeature erforderlich sind
+def check_pattern_feature(all_edges):
     required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
-    found_lengths_set = {round(length, 3) for length in found_lengths}  # Rundung auf drei Dezimalstellen
+    # Erstellen eines Dictionarys zur Überwachung der erforderlichen Häufigkeiten
+    required_counts = {1.5: 1, 6.502: 2, 1.2: 1}
+    found_lengths = [round(edge.GetLength(), 3) for edge in all_edges]
 
-    # Überprüfen, ob alle erforderlichen Längen vorhanden sind
-    if all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths_set) for required in required_pattern_lengths):
-        lw.WriteLine("Musterfeature: JA")
-    else:
-        lw.WriteLine("Musterfeature: NEIN")
+    # Erstellen eines Counts Dictionary aus den gefundenen Längen
+    found_counts = {}
+    for length in found_lengths:
+        if length in found_counts:
+            found_counts[length] += 1
+        else:
+            found_counts[length] = 1
+
+    # Überprüfen, ob alle benötigten Längen in der erforderlichen Häufigkeit gefunden wurden
+    for length, count in required_counts.items():
+        if found_counts.get(length, 0) < count:
+            return False
+    return True
 
 def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     found_rectangles = []
@@ -295,12 +289,10 @@ def is_rectangle(edges):
 def list_features_and_geometries(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
-
+    
     lw.WriteLine("=" * 50)
     lw.WriteLine("Analyse der Körper und Geometrien")
     lw.WriteLine("=" * 50)
-
- #   feature_collection = workPart.Features
 
     body_count = 0
     for body in workPart.Bodies:
@@ -332,6 +324,10 @@ def list_geometry_properties_in_sketches(theSession, workPart):
     lw.WriteLine("Analyse der Skizzen")
     lw.WriteLine("=" * 50)
 
+    # Variablen zur Erfassung des Zustands der Features über alle Skizzen hinweg
+    rotations_feature_found = False
+    pattern_feature_found = False
+
     for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
         lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
         all_edges = []
@@ -340,9 +336,23 @@ def list_geometry_properties_in_sketches(theSession, workPart):
         for curve in sketch.GetAllGeometry():
             process_geometry(curve, all_edges, circles)
 
-        analyze_sketch_geometry(lw, all_edges, circles, sketch)
+        # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
+        if check_specific_edge_lengths(all_edges):
+            rotations_feature_found = True
+        if check_pattern_feature(all_edges):
+            pattern_feature_found = True
+
+        for edge in all_edges:
+            edge_type = "Linear" if isinstance(edge, NXOpen.Line) else "Circular" if isinstance(edge, NXOpen.Arc) else "Unbekannt"
+            lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
         lw.WriteLine("\n")
 
+    # Gesamtprüfung für alle Skizzen ausgeben
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Grundlagenprüfung:")
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA' if rotations_feature_found else 'NEIN'} Erzeugung Muster:\nMusterfeature: {'JA' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine("\n")
     lw.Close()
 
 if __name__ == '__main__':
