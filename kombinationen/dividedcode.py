@@ -226,10 +226,20 @@ def check_specific_edge_lengths(lw, found_lengths):
         lw.WriteLine("Erzeugung Grundkörper:")
         lw.WriteLine("Rotationsfeature: NEIN")
 
+def check_pattern_feature(lw, found_lengths):
+    # Längen, die für das Musterfeature erforderlich sind
+    required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
+    found_lengths_set = {round(length, 3) for length in found_lengths}  # Rundung auf drei Dezimalstellen
+
+    # Überprüfen, ob alle erforderlichen Längen vorhanden sind
+    if all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths_set) for required in required_pattern_lengths):
+        lw.WriteLine("Musterfeature: JA")
+    else:
+        lw.WriteLine("Musterfeature: NEIN")
+
 def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     found_rectangles = []
     found_circles = []
-    # Liste für gefundene Kantenlängen
     found_lengths = []
 
     # Check for rectangles
@@ -241,15 +251,18 @@ def analyze_sketch_geometry(lw, all_edges, circles, sketch):
         print_circle_details(lw, circle, sketch)
         found_circles.append(circle)
 
-    # Prüfen und Speichern der Längen aller Kanten
+    # Speichern der Kantenlängen
     for edge in all_edges:
         length = edge.GetLength()
         found_lengths.append(length)
         if edge not in found_rectangles:
             print_edge_details(lw, edge, all_edges.index(edge) + 1)
 
-    # Überprüfung der spezifischen Kantenlängen
+    # Prüfung für Grundkörper
     check_specific_edge_lengths(lw, found_lengths)
+    # Prüfung für Musterfeature
+    check_pattern_feature(lw, found_lengths)
+
 
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
