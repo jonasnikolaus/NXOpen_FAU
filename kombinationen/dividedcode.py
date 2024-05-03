@@ -326,6 +326,40 @@ def is_rectangle(edges):
         return True
     return False
 
+def validate_feature_operations(lw, workPart):
+    pattern_count = 0
+    mirror_count = 0
+    feature_sequence = []
+
+    # Untersuchen jedes Features im Arbeitsbereich
+    for feature in workPart.Features:
+        if feature.FeatureType == 'Pattern Feature':
+            pattern_count += 1
+            feature_sequence.append((feature, 'Pattern'))
+        elif feature.FeatureType == 'Mirror Feature':
+            mirror_count += 1
+            feature_sequence.append((feature, 'Mirror'))
+
+    # Überprüfung der Sequenz und der Zählungen
+    pattern_first = True  # Default to True unless proven otherwise
+    for i, feat in enumerate(feature_sequence):
+        if feat[1] == 'Mirror' and 'Pattern' in [f[1] for f in feature_sequence[i+1:]]:
+            pattern_first = False
+            break
+
+    correct_pattern_usage = pattern_count == 1
+    correct_mirror_usage = mirror_count == 1
+
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Grundlagenprüfung der Feature-Nutzung:")
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Anzahl der Musterfeatures: {pattern_count}")
+    lw.WriteLine(f"Pattern used correctly: {'Yes' if correct_pattern_usage and pattern_first else 'No'}")
+    lw.WriteLine(f"Mirror used correctly: {'Yes' if correct_mirror_usage else 'No'}")
+    if not pattern_first:
+        lw.WriteLine("Fehler: Musterfeature nicht in der erwarteten Reihenfolge.")
+    lw.WriteLine("\n")
+
 # Listet Merkmale und Geometrien auf
 def list_features_and_geometries(theSession, workPart):
     lw = theSession.ListingWindow
@@ -355,6 +389,7 @@ def list_features_and_geometries(theSession, workPart):
         elif isinstance(feature, NXOpen.Features.HolePackage):
             print_hole_details(lw, feature, workPart)
 
+    validate_feature_operations(lw, workPart)
     lw.Close()
 
 # Listet Geometrieeigenschaften in Skizzen auf
@@ -393,7 +428,7 @@ def list_geometry_properties_in_sketches(theSession, workPart):
     lw.WriteLine("=" * 50)
     lw.WriteLine("Grundlagenprüfung:")
     lw.WriteLine("=" * 50)
-    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA' if rotations_feature_found else 'NEIN'} Erzeugung Muster:\nMusterfeature: {'JA' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA' if rotations_feature_found else 'NEIN'}\nErzeugung Muster:\nMusterfeature: {'JA' if pattern_feature_found else 'NEIN'}")
     lw.WriteLine("\n")
     lw.Close()
 
