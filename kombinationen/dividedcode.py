@@ -326,34 +326,54 @@ def is_rectangle(edges):
         return True
     return False
 
+def get_total_copies_from_pattern(feature):
+    try:
+        # Erstellen eines Builders für das Musterfeature
+        pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
+        pattern_service = pattern_builder.PatternService
+        
+        # Auslesen der Anzahl der Kopien, abhängig von der Art des Musters
+        if hasattr(pattern_service, 'CircularDefinition'):
+            return pattern_service.CircularDefinition.AngularSpacing.NCopies.Value
+        elif hasattr(pattern_service, 'AlongPathDefinition'):
+            x_copies = pattern_service.AlongPathDefinition.XOnPathSpacing.NCopies.Value
+            y_copies = pattern_service.AlongPathDefinition.YOnPathSpacing.NCopies.Value if hasattr(pattern_service.AlongPathDefinition, 'YOnPathSpacing') else 1
+            return x_copies + y_copies
+        # Ergänzen Sie weitere elif-Blöcke für andere Arten von Musterdefinitionen
+        return 0
+    except Exception as e:
+        print(f"Error accessing pattern properties: {str(e)}")
+        return 0
+    finally:
+        pattern_builder.Destroy()
+
 def validate_feature_operations(lw, workPart):
-    pattern_count = 0
+    total_pattern_copies = 0
     mirror_count = 0
     feature_sequence = []
 
-    # Untersuchen jedes Features im Arbeitsbereich
     for feature in workPart.Features:
         if feature.FeatureType == 'Pattern Feature':
-            pattern_count += 1
-            feature_sequence.append((feature, 'Pattern'))
+            num_copies = get_total_copies_from_pattern(feature)
+            total_pattern_copies += num_copies
+            feature_sequence.append('Pattern')
         elif feature.FeatureType == 'Mirror Feature':
             mirror_count += 1
-            feature_sequence.append((feature, 'Mirror'))
+            feature_sequence.append('Mirror')
 
-    # Überprüfung der Sequenz und der Zählungen
-    pattern_first = True  # Default to True unless proven otherwise
+    pattern_first = True
     for i, feat in enumerate(feature_sequence):
-        if feat[1] == 'Mirror' and 'Pattern' in [f[1] for f in feature_sequence[i+1:]]:
+        if feat == 'Mirror' and 'Pattern' in feature_sequence[i+1:]:
             pattern_first = False
             break
 
-    correct_pattern_usage = pattern_count == 1
+    correct_pattern_usage = total_pattern_copies == 6
     correct_mirror_usage = mirror_count == 1
 
     lw.WriteLine("=" * 50)
     lw.WriteLine("Grundlagenprüfung der Feature-Nutzung:")
     lw.WriteLine("=" * 50)
-    lw.WriteLine(f"Anzahl der Musterfeatures: {pattern_count}")
+    lw.WriteLine(f"Total number of pattern copies: {total_pattern_copies}")
     lw.WriteLine(f"Pattern used correctly: {'Yes' if correct_pattern_usage and pattern_first else 'No'}")
     lw.WriteLine(f"Mirror used correctly: {'Yes' if correct_mirror_usage else 'No'}")
     if not pattern_first:
