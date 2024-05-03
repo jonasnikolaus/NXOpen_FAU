@@ -326,40 +326,48 @@ def is_rectangle(edges):
         return True
     return False
 
-def get_total_copies_from_pattern(feature):
+def get_total_copies_from_pattern(feature, workPart, lw):
+    """
+    Ermittelt die Anzahl der Kopien eines Muster-Features und gibt Debugging-Informationen aus.
+    """
+    pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
+    total_copies = 0
+
     try:
-        # Erstellen eines Builders für das Musterfeature
-        pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
         pattern_service = pattern_builder.PatternService
-        
-        # Auslesen der Anzahl der Kopien, abhängig von der Art des Musters
-        if hasattr(pattern_service, 'CircularDefinition'):
-            return pattern_service.CircularDefinition.AngularSpacing.NCopies.Value
-        elif hasattr(pattern_service, 'AlongPathDefinition'):
+        if hasattr(pattern_service, 'AlongPathDefinition'):
             x_copies = pattern_service.AlongPathDefinition.XOnPathSpacing.NCopies.Value
             y_copies = pattern_service.AlongPathDefinition.YOnPathSpacing.NCopies.Value if hasattr(pattern_service.AlongPathDefinition, 'YOnPathSpacing') else 1
-            return x_copies + y_copies
-        # Ergänzen Sie weitere elif-Blöcke für andere Arten von Musterdefinitionen
-        return 0
+            total_copies = x_copies * y_copies
+            lw.WriteLine(f"Debug: Pattern Feature {feature.JournalIdentifier} X copies: {x_copies}, Y copies: {y_copies}, Total: {total_copies}")
+        elif hasattr(pattern_service, 'CircularDefinition'):
+            total_copies = pattern_service.CircularDefinition.AngularSpacing.NCopies.Value
+            lw.WriteLine(f"Debug: Circular Pattern Feature {feature.JournalIdentifier} copies: {total_copies}")
+        # Add other pattern types if necessary
     except Exception as e:
-        print(f"Error accessing pattern properties: {str(e)}")
-        return 0
+        lw.WriteLine(f"Error accessing pattern properties: {str(e)}")
     finally:
         pattern_builder.Destroy()
 
+    return total_copies
+
 def validate_feature_operations(lw, workPart):
+    lw.WriteLine("Starting feature validation...")
     total_pattern_copies = 0
     mirror_count = 0
     feature_sequence = []
 
     for feature in workPart.Features:
+        lw.WriteLine(f"Feature Type: {feature.FeatureType} - ID: {feature.JournalIdentifier}")
         if feature.FeatureType == 'Pattern Feature':
-            num_copies = get_total_copies_from_pattern(feature)
+            num_copies = get_total_copies_from_pattern(feature, workPart, lw)
             total_pattern_copies += num_copies
             feature_sequence.append('Pattern')
+            lw.WriteLine(f"Pattern copies count: {num_copies}")
         elif feature.FeatureType == 'Mirror Feature':
             mirror_count += 1
             feature_sequence.append('Mirror')
+            lw.WriteLine("Mirror feature found.")
 
     pattern_first = True
     for i, feat in enumerate(feature_sequence):
