@@ -133,9 +133,9 @@ def print_hole_details(lw, feature, workPart):
         hole_diameter = hole_diameter_expr.RightHandSide if hole_diameter_expr else "Undefined"
 
         # Fetch type, boolean operation, general hole form, and counterbore details
-        hole_type = hole_builder.Type
+        hole_type = hole_builder.Type.value
         boolean_operation = hole_builder.BooleanOperation
-        general_hole_form = hole_builder.GeneralHoleForm
+        general_hole_form = hole_builder.GeneralHoleForm.value
 
         # Enum mapping
         hole_type_descriptions = {
