@@ -328,28 +328,50 @@ def is_rectangle(edges):
 
 def get_total_copies_from_pattern(feature, workPart, lw):
     """
-    Ermittelt die Anzahl der Kopien eines Muster-Features und gibt Debugging-Informationen aus.
+    Ermittelt die Anzahl der Kopien eines Muster-Features basierend auf spezifischen Kantenlängen und gibt Debugging-Informationen aus.
     """
     pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
     total_copies = 0
 
     try:
-        pattern_service = pattern_builder.PatternService
-        if hasattr(pattern_service, 'AlongPathDefinition'):
-            x_copies = pattern_service.AlongPathDefinition.XOnPathSpacing.NCopies.Value
-            y_copies = pattern_service.AlongPathDefinition.YOnPathSpacing.NCopies.Value if hasattr(pattern_service.AlongPathDefinition, 'YOnPathSpacing') else 1
-            total_copies = x_copies * y_copies
-            lw.WriteLine(f"Debug: Pattern Feature {feature.JournalIdentifier} X copies: {x_copies}, Y copies: {y_copies}, Total: {total_copies}")
-        elif hasattr(pattern_service, 'CircularDefinition'):
-            total_copies = pattern_service.CircularDefinition.AngularSpacing.NCopies.Value
-            lw.WriteLine(f"Debug: Circular Pattern Feature {feature.JournalIdentifier} copies: {total_copies}")
-        # Add other pattern types if necessary
+        section = pattern_builder.Section
+        if section:
+            curves = section.GetOutputCurves()
+            required_lengths = [1.5, 6.502, 6.502, 1.2]
+            found_lengths = [round(get_curve_length(curve), 3) for curve in curves]
+            
+            # Count each length
+            length_count = {length: found_lengths.count(length) for length in required_lengths}
+
+            # Check if the pattern contains the exact count of each length
+            if all(length_count.get(length, 0) >= required_lengths.count(length) for length in required_lengths):
+                total_copies = 1  # Found one instance of the pattern
+                lw.WriteLine(f"Debug: Pattern with specific dimensions found 1 time in {feature.JournalIdentifier}")
+            else:
+                lw.WriteLine("No matching pattern found for the specified dimensions.")
+        else:
+            lw.WriteLine("No section available for this pattern feature.")
+
     except Exception as e:
         lw.WriteLine(f"Error accessing pattern properties: {str(e)}")
     finally:
         pattern_builder.Destroy()
 
     return total_copies
+
+def get_curve_length(curve):
+    """
+    Berechnet die Länge einer Kurve basierend auf ihrem Typ.
+    """
+    if isinstance(curve, NXOpen.Line):
+        start_point = curve.StartPoint
+        end_point = curve.EndPoint
+        return math.sqrt((end_point.X - start_point.X)**2 + (end_point.Y - start_point.Y)**2 + (end_point.Z - start_point.Z)**2)
+    elif isinstance(curve, NXOpen.Arc):
+        return curve.GetLength()
+    else:
+        return 0
+
 
 def validate_feature_operations(lw, workPart):
     lw.WriteLine("Starting feature validation...")
