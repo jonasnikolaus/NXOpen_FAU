@@ -267,33 +267,6 @@ def check_pattern_feature(all_edges):
             return False
     return True
 
-# Analysiert Geometrien in Skizzen
-#def analyze_sketch_geometry(lw, all_edges, circles, sketch):
-    found_rectangles = []
-    found_circles = []
-    found_lengths = []
-
-    # Check for rectangles
-    if len(all_edges) >= 4:
-        found_rectangles = analyze_edges_for_rectangle(lw, all_edges, sketch)
-
-    # Process circles
-    for circle in circles:
-        print_circle_details(lw, circle, sketch)
-        found_circles.append(circle)
-
-    # Speichern der Kantenlängen
-    for edge in all_edges:
-        length = edge.GetLength()
-        found_lengths.append(length)
-        if edge not in found_rectangles:
-            print_edge_details(lw, edge, all_edges.index(edge) + 1)
-
-    # Prüfung für Grundkörper
-    check_specific_edge_lengths(lw, found_lengths)
-    # Prüfung für Musterfeature
-    check_pattern_feature(lw, found_lengths)
-
 # Analysiert Kanten für Rechtecke
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
@@ -339,25 +312,27 @@ def get_curve_length(curve):
     else:
         return 0
 
-def check_if_pattern_feature(feature):
-    # Überprüft, ob das Feature ein Muster ist, basierend auf seinem Namen
-    return "Pattern Feature" in feature.Name.lower()
+def is_pattern_feature(feature):
+    # Überprüft, ob das Feature ein PatternFeature ist
+    return "PatternFeature" in feature.JournalIdentifier
 
-def check_if_mirror_feature(feature):
-    # Überprüft, ob das Feature ein Spiegel ist, basierend auf seinem Namen
-    return "mirror feature" in feature.Name.lower()
+def is_mirror_feature(feature):
+    # Überprüft, ob das Feature ein MirrorFeature ist
+    return "MirrorFeature" in feature.JournalIdentifier
 
 def count_pattern_and_mirror_features(workPart, lw):
     pattern_count = 0
     mirror_count = 0
 
     for feature in workPart.Features:
-        if isinstance(feature, NXOpen.Features.Extrude):
-            # Spezielle Eigenschaften oder Namen prüfen
-            if check_if_pattern_feature(feature):
-                pattern_count += 1
-            if check_if_mirror_feature(feature):
-                mirror_count += 1
+        feature_name = feature.Name if feature.Name else "Unnamed"
+        lw.WriteLine(f"Feature Name: {feature_name}")  # Debugging-Ausgabe
+        if is_pattern_feature(feature):
+            lw.WriteLine(f"Pattern Feature gefunden: {feature.JournalIdentifier}")  # Debugging-Ausgabe
+            pattern_count += 1
+        if is_mirror_feature(feature):
+            lw.WriteLine(f"Mirror Feature gefunden: {feature.JournalIdentifier}")  # Debugging-Ausgabe
+            mirror_count += 1
 
     lw.WriteLine(f"Anzahl der Pattern Features: {pattern_count}")
     lw.WriteLine(f"Anzahl der Mirror Features: {mirror_count}")
@@ -425,8 +400,13 @@ def list_features_and_geometries(theSession, workPart):
         elif isinstance(feature, NXOpen.Features.HolePackage):
             print_hole_details(lw, feature, workPart)
 
-   # validate_feature_operations(lw, workPart)
+    # Überprüfen und Zählen der Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+    lw.WriteLine(f"Anzahl der Pattern Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror Features: {total_mirrors}")
+
     lw.Close()
+
 
 # Listet Geometrieeigenschaften in Skizzen auf
 def list_geometry_properties_in_sketches(theSession, workPart):
@@ -482,6 +462,6 @@ def list_geometry_properties_in_sketches(theSession, workPart):
 if __name__ == '__main__':
     theSession = NXOpen.Session.GetSession()
     workPart = theSession.Parts.Work
-
+    #pattern_count, mirror_count = count_features_by_type(workPart)
     list_geometry_properties_in_sketches(theSession, workPart)
     list_features_and_geometries(theSession, workPart)
