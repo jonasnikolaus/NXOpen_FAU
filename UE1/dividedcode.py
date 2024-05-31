@@ -248,7 +248,7 @@ def check_specific_edge_lengths(all_edges):
 
 # Überprüft, ob ein Musterfeature vorhanden ist
 def check_pattern_feature(all_edges):
-    required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
+    # required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
     # Erstellen eines Dictionarys zur Überwachung der erforderlichen Häufigkeiten
     required_counts = {1.5: 1, 6.502: 2, 1.2: 1}
     found_lengths = [round(edge.GetLength(), 3) for edge in all_edges]
@@ -268,7 +268,7 @@ def check_pattern_feature(all_edges):
     return True
 
 # Analysiert Geometrien in Skizzen
-def analyze_sketch_geometry(lw, all_edges, circles, sketch):
+#def analyze_sketch_geometry(lw, all_edges, circles, sketch):
     found_rectangles = []
     found_circles = []
     found_lengths = []
@@ -326,39 +326,6 @@ def is_rectangle(edges):
         return True
     return False
 
-def get_total_copies_from_pattern(feature, workPart, lw):
-    """
-    Ermittelt die Anzahl der Kopien eines Muster-Features basierend auf spezifischen Kantenlängen und gibt Debugging-Informationen aus.
-    """
-    pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
-    total_copies = 0
-
-    try:
-        section = pattern_builder.Section
-        if section:
-            curves = section.GetOutputCurves()
-            required_lengths = [1.5, 6.502, 6.502, 1.2]
-            found_lengths = [round(get_curve_length(curve), 3) for curve in curves]
-            
-            # Count each length
-            length_count = {length: found_lengths.count(length) for length in required_lengths}
-
-            # Check if the pattern contains the exact count of each length
-            if all(length_count.get(length, 0) >= required_lengths.count(length) for length in required_lengths):
-                total_copies = 1  # Found one instance of the pattern
-                lw.WriteLine(f"Debug: Pattern with specific dimensions found 1 time in {feature.JournalIdentifier}")
-            else:
-                lw.WriteLine("No matching pattern found for the specified dimensions.")
-        else:
-            lw.WriteLine("No section available for this pattern feature.")
-
-    except Exception as e:
-        lw.WriteLine(f"Error accessing pattern properties: {str(e)}")
-    finally:
-        pattern_builder.Destroy()
-
-    return total_copies
-
 def get_curve_length(curve):
     """
     Berechnet die Länge einer Kurve basierend auf ihrem Typ.
@@ -372,43 +339,62 @@ def get_curve_length(curve):
     else:
         return 0
 
+def check_if_pattern_feature(feature):
+    # Überprüft, ob das Feature ein Muster ist, basierend auf seinem Namen
+    return "Pattern Feature" in feature.Name.lower()
 
-def validate_feature_operations(lw, workPart):
-    lw.WriteLine("Starting feature validation...")
-    total_pattern_copies = 0
+def check_if_mirror_feature(feature):
+    # Überprüft, ob das Feature ein Spiegel ist, basierend auf seinem Namen
+    return "mirror feature" in feature.Name.lower()
+
+def count_pattern_and_mirror_features(workPart, lw):
+    pattern_count = 0
     mirror_count = 0
-    feature_sequence = []
 
     for feature in workPart.Features:
-        lw.WriteLine(f"Feature Type: {feature.FeatureType} - ID: {feature.JournalIdentifier}")
-        if feature.FeatureType == 'Pattern Feature':
-            num_copies = get_total_copies_from_pattern(feature, workPart, lw)
-            total_pattern_copies += num_copies
-            feature_sequence.append('Pattern')
-            lw.WriteLine(f"Pattern copies count: {num_copies}")
-        elif feature.FeatureType == 'Mirror Feature':
-            mirror_count += 1
-            feature_sequence.append('Mirror')
-            lw.WriteLine("Mirror feature found.")
+        if isinstance(feature, NXOpen.Features.Extrude):
+            # Spezielle Eigenschaften oder Namen prüfen
+            if check_if_pattern_feature(feature):
+                pattern_count += 1
+            if check_if_mirror_feature(feature):
+                mirror_count += 1
 
-    pattern_first = True
-    for i, feat in enumerate(feature_sequence):
-        if feat == 'Mirror' and 'Pattern' in feature_sequence[i+1:]:
-            pattern_first = False
-            break
+    lw.WriteLine(f"Anzahl der Pattern Features: {pattern_count}")
+    lw.WriteLine(f"Anzahl der Mirror Features: {mirror_count}")
+    return pattern_count, mirror_count
 
-    correct_pattern_usage = total_pattern_copies == 6
-    correct_mirror_usage = mirror_count == 1
+def get_pattern_feature_count(workPart, lw):
+    """
+    Ermittelt, wie oft das Pattern Feature mit bestimmten Dimensionen im Werkstück vorkommt.
+    """
+    required_lengths = [1.5, 6.502, 6.502, 1.2]
+    pattern_count = 0
 
-    lw.WriteLine("=" * 50)
-    lw.WriteLine("Grundlagenprüfung der Feature-Nutzung:")
-    lw.WriteLine("=" * 50)
-    lw.WriteLine(f"Total number of pattern copies: {total_pattern_copies}")
-    lw.WriteLine(f"Pattern used correctly: {'Yes' if correct_pattern_usage and pattern_first else 'No'}")
-    lw.WriteLine(f"Mirror used correctly: {'Yes' if correct_mirror_usage else 'No'}")
-    if not pattern_first:
-        lw.WriteLine("Fehler: Musterfeature nicht in der erwarteten Reihenfolge.")
-    lw.WriteLine("\n")
+    # Durchsuchen aller Features im Werkstück
+    for feature in workPart.Features:
+        if isinstance(feature, NXOpen.Features.Extrude):
+            # Prüfen, ob das Feature ein Pattern Feature ist
+            builder = workPart.Features.CreateExtrudeBuilder(feature)
+            try:
+                section = builder.Section
+                if section:
+                    curves = section.GetOutputCurves()
+                    lengths = [
+                        round(math.sqrt((curve.EndPoint.X - curve.StartPoint.X)**2 +
+                                        (curve.EndPoint.Y - curve.StartPoint.Y)**2 +
+                                        (curve.EndPoint.Z - curve.StartPoint.Z)**2), 3)
+                        for curve in curves if isinstance(curve, NXOpen.Line)
+                    ]
+                    # Prüfen, ob alle erforderlichen Längen vorhanden sind
+                    if sorted(lengths) == sorted(required_lengths):
+                        pattern_count += 1
+            except Exception as e:
+                lw.WriteLine(f"Error processing feature {feature.JournalIdentifier}: {str(e)}")
+            finally:
+                builder.Destroy()
+
+   # lw.WriteLine(f"Pattern Feature mit spezifischen Dimensionen kommt {pattern_count} mal vor.")
+    return pattern_count
 
 # Listet Merkmale und Geometrien auf
 def list_features_and_geometries(theSession, workPart):
@@ -439,7 +425,7 @@ def list_features_and_geometries(theSession, workPart):
         elif isinstance(feature, NXOpen.Features.HolePackage):
             print_hole_details(lw, feature, workPart)
 
-    validate_feature_operations(lw, workPart)
+   # validate_feature_operations(lw, workPart)
     lw.Close()
 
 # Listet Geometrieeigenschaften in Skizzen auf
@@ -474,11 +460,22 @@ def list_geometry_properties_in_sketches(theSession, workPart):
             lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
         lw.WriteLine("\n")
 
+    # Muster-Features zählen
+    total_patterns = get_pattern_feature_count(workPart, lw)
+
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine("Grundlagenprüfung:")
     lw.WriteLine("=" * 50)
-    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA' if rotations_feature_found else 'NEIN'}\nErzeugung Muster:\nMusterfeature: {'JA' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
+    
+    # Zählen von Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
     lw.WriteLine("\n")
     lw.Close()
 
