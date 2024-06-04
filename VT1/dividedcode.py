@@ -457,7 +457,7 @@ def list_geometry_properties_in_sketches(theSession, workPart):
 
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
-    lw.WriteLine("Grundlagenprüfung:")
+    lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
     lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
@@ -546,7 +546,7 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
 
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
-    lw.WriteLine("Grundlagenprüfung:")
+    lw.WriteLine(f"Grundlagenprüfung: Preset {EXERCISE_NUMBER}")
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
     lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
