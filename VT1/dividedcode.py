@@ -569,7 +569,7 @@ def main():
         list_geometry_properties_in_sketches(theSession, workPart)
         list_features_and_geometries(theSession, workPart)
     elif EXERCISE_NUMBER == 2:
-        # Führe Prüfungen für Übung 2 durch (Implementieren Sie diese Funktionen entsprechend)
+        # Führe Prüfungen für Übung 2 durch
         list_geometry_properties_in_sketches_exercise2(theSession, workPart)
         list_features_and_geometries_exercise2(theSession, workPart)
     else:
