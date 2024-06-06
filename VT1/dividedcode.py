@@ -253,7 +253,7 @@ def check_specific_edge_lengths(all_edges):
     return all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths) for required in required_lengths)
 
 def check_specific_edge_lengths2(all_edges):
-    required_lengths = [444.000, 19.500, 5.000, 0.500, 17.000, 2.500, 65.000, 5.000, 12.000, 2.500, 170.000, 5.000, 18.000, 17.000, 87.000, 0.500, 10.000, 2.000, 18.000, 0.500, 42.000]
+    required_lengths = [444.000, 17.000, 126.000, 0.500, 10.000, 2.000, 21.000, 0.500, 18.000, 5.000, 170.000, 2.500, 12.000, 5.000, 0.500, 5.000, 19.500, 65.000, 2.500, 17.000]
     found_lengths = [edge.GetLength() for edge in all_edges]
     return all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths) for required in required_lengths)
 
@@ -278,6 +278,83 @@ def check_pattern_feature(all_edges):
         if found_counts.get(length, 0) < count:
             return False
     return True
+
+# Überprüft, ob ein Musterfeature vorhanden ist
+def check_passfeder_feature(all_edges):
+    # required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
+    # Erstellen eines Dictionarys zur Überwachung der erforderlichen Häufigkeiten
+    required_counts = {31.0: 2, 55: 1}
+    found_lengths = [round(edge.GetLength(), 3) for edge in all_edges]
+
+    # Erstellen eines Counts Dictionary aus den gefundenen Längen
+    found_counts = {}
+    for length in found_lengths:
+        if length in found_counts:
+            found_counts[length] += 1
+        else:
+            found_counts[length] = 1
+
+    # Überprüfen, ob alle benötigten Längen in der erforderlichen Häufigkeit gefunden wurden
+    for length, count in required_counts.items():
+        if found_counts.get(length, 0) < count:
+            return False
+    return True
+
+
+# Überprüft, ob ein Musterfeature vorhanden ist
+def check_keilwelle_feature(all_edges):
+    # required_pattern_lengths = [1.5, 6.502, 6.502, 1.2]
+    # Erstellen eines Dictionarys zur Überwachung der erforderlichen Häufigkeiten
+    required_counts = {3.106: 2}
+    found_lengths = [round(edge.GetLength(), 3) for edge in all_edges]
+
+    # Erstellen eines Counts Dictionary aus den gefundenen Längen
+    found_counts = {}
+    for length in found_lengths:
+        if length in found_counts:
+            found_counts[length] += 1
+        else:
+            found_counts[length] = 1
+
+    # Überprüfen, ob alle benötigten Längen in der erforderlichen Häufigkeit gefunden wurden
+    for length, count in required_counts.items():
+        if found_counts.get(length, 0) < count:
+            return False
+    return True
+
+def check_extrude_feature_with_lengths(workPart, lw):
+    """
+    Überprüft, ob ein Extrusionsfeature (EXTRUDE(7)) mit bestimmten Linienlängen vorhanden ist.
+    """
+    required_lengths = [3.106, 3.106, 14.000, 17.000]
+    for feature in workPart.Features:
+        if isinstance(feature, NXOpen.Features.Extrude):
+            builder = workPart.Features.CreateExtrudeBuilder(feature)
+            try:
+                section = builder.Section
+                if section:
+                    curves = section.GetOutputCurves()
+                    lengths = []
+                    for curve in curves:
+                        if isinstance(curve, NXOpen.Line):
+                            start_point = curve.StartPoint
+                            end_point = curve.EndPoint
+                            line_length = math.sqrt((end_point.X - start_point.X)**2 + (end_point.Y - start_point.Y)**2 + (end_point.Z - start_point.Z)**2)
+                            lengths.append(round(line_length, 3))
+                        elif isinstance(curve, NXOpen.Arc):
+                            lengths.append(round(curve.Radius, 3))  # Hier Radius verwenden
+
+
+                    if all(length in lengths for length in required_lengths):
+                        lw.WriteLine("Extrude Feature EXTRUDE(7) mit den erforderlichen Längen vorhanden.")
+                        return True
+                    else:
+                        lw.WriteLine("Extrude Feature EXTRUDE(7) ohne die erforderlichen Längen gefunden.")
+            except Exception as e:
+                lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
+            finally:
+                builder.Destroy()
+    return False
 
 # Analysiert Kanten für Rechtecke
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
@@ -520,7 +597,9 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
 
     # Variablen zur Erfassung des Zustands der Features über alle Skizzen hinweg
     rotations_feature_found = False
-    pattern_feature_found = False
+    passfeder_feature_found = False
+    keilwelle_feature_found = False
+    extrude_feature_found = False
 
     for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
         lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
@@ -533,8 +612,10 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
         # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
         if check_specific_edge_lengths2(all_edges):
             rotations_feature_found = True
-        if check_pattern_feature(all_edges):
-            pattern_feature_found = True
+        if check_passfeder_feature(all_edges):
+            passfeder_feature_found = True
+        if check_keilwelle_feature(all_edges):
+            keilwelle_feature_found = True
 
         for edge in all_edges:
             edge_type = "Linear" if isinstance(edge, NXOpen.Line) else "Circular" if isinstance(edge, NXOpen.Arc) else "Unbekannt"
@@ -549,9 +630,12 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
     lw.WriteLine(f"Grundlagenprüfung: Preset {EXERCISE_NUMBER}")
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
-    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
-    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
-    
+    lw.WriteLine(f"Erzeugung Features:\nPassfeder: {'JA, Skizze korrekt.' if passfeder_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Keilwelle: {'JA, Skizze korrekt.' if keilwelle_feature_found else 'NEIN'}")
+    # Überprüfung, ob das Extrusionsfeature EXTRUDE(7) mit den erforderlichen Längen vorhanden ist
+    extrude_feature_found = check_extrude_feature_with_lengths(workPart, lw)
+    lw.WriteLine(f"Extrude Feature: {'JA, Skizze korrekt.' if extrude_feature_found else 'NEIN'}")
+
     # Zählen von Pattern- und Mirror-Features
     total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
 
