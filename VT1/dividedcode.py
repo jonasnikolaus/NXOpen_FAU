@@ -322,7 +322,39 @@ def check_keilwelle_feature(all_edges):
             return False
     return True
 
-def check_extrude_feature_with_lengths(workPart, lw):
+def check_passfeder_feature_with_lengths(workPart, lw):
+    """
+    Überprüft, ob ein Extrusionsfeature (EXTRUDE(7)) mit bestimmten Linienlängen vorhanden ist.
+    """
+    required_lengths = [31, 31, 7, 7]
+    for feature in workPart.Features:
+        if isinstance(feature, NXOpen.Features.Extrude):
+            builder = workPart.Features.CreateExtrudeBuilder(feature)
+            try:
+                section = builder.Section
+                if section:
+                    curves = section.GetOutputCurves()
+                    lengths = []
+                    for curve in curves:
+                        if isinstance(curve, NXOpen.Line):
+                            start_point = curve.StartPoint
+                            end_point = curve.EndPoint
+                            line_length = math.sqrt((end_point.X - start_point.X)**2 + (end_point.Y - start_point.Y)**2 + (end_point.Z - start_point.Z)**2)
+                            lengths.append(round(line_length, 3))
+                        elif isinstance(curve, NXOpen.Arc):
+                            lengths.append(round(curve.Radius, 3))  # Hier Radius verwenden
+
+                    if all(length in lengths for length in required_lengths):
+                        lw.WriteLine("Extrude Feature für Passfeder mit den erforderlichen Längen vorhanden.")
+                        return True
+            except Exception as e:
+                lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
+            finally:
+                builder.Destroy()
+    lw.WriteLine("Extrude Feature für Passfeder ohne die erforderlichen Längen gefunden.")
+    return False
+
+def check_keilwelle_feature_with_lengths(workPart, lw):
     """
     Überprüft, ob ein Extrusionsfeature (EXTRUDE(7)) mit bestimmten Linienlängen vorhanden ist.
     """
@@ -345,15 +377,54 @@ def check_extrude_feature_with_lengths(workPart, lw):
                             lengths.append(round(curve.Radius, 3))  # Hier Radius verwenden
 
                     if all(length in lengths for length in required_lengths):
-                        lw.WriteLine("Extrude Feature EXTRUDE(7) mit den erforderlichen Längen vorhanden.")
+                        lw.WriteLine("Extrude Feature für Keilwelle mit den erforderlichen Längen vorhanden.")
                         return True
             except Exception as e:
                 lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
             finally:
                 builder.Destroy()
-    lw.WriteLine("Extrude Feature EXTRUDE(7) ohne die erforderlichen Längen gefunden.")
+    lw.WriteLine("Extrude Feature für Keilwelle ohne die erforderlichen Längen gefunden.")
+
     return False
 
+def check_circular_pattern_feature(workPart, lw):
+    """
+    Überprüft, ob ein kreisförmiges Musterformelement korrekt konfiguriert ist.
+    """
+    for feature in workPart.Features:
+        if isinstance(feature, NXOpen.Features.PatternFeature):
+            pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
+            try:
+                pattern_definition = pattern_builder.PatternDefinition
+                if pattern_definition.PatternType == NXOpen.GeometricUtilities.PatternDefinition.PatternTypeOptions.Circular:
+                    lw.WriteLine(f"Pattern Feature {feature.JournalIdentifier} ist kreisförmig.")
+
+                    # Überprüfen der Anzahl der Instanzen
+                    instance_count = pattern_definition.CircularDefinition.AngularSpacing.NCopies.Value
+                    lw.WriteLine(f"Anzahl der Instanzen: {instance_count}")
+
+                    # Überprüfen des Winkels zwischen den Instanzen
+                    angle = pattern_definition.CircularDefinition.AngularSpacing.PitchAngle.Value
+                    lw.WriteLine(f"Winkel zwischen den Instanzen: {angle}")
+
+                    # Überprüfen des Radius
+                    radius = pattern_definition.CircularDefinition.RadialSpacing.PitchDistance.Value
+                    lw.WriteLine(f"Radius des Musters: {radius}")
+
+                    # Beispiel für die Überprüfung spezifischer Werte
+                    required_instance_count = 6
+                    required_angle = 60.0  # Beispielwert, anpassen nach Bedarf
+                    required_radius = 10.0  # Beispielwert, anpassen nach Bedarf
+
+                    if instance_count == required_instance_count and math.isclose(angle, required_angle, rel_tol=1e-5) and math.isclose(radius, required_radius, rel_tol=1e-5):
+                        lw.WriteLine("Kreisförmiges Muster korrekt konfiguriert.")
+                    else:
+                        lw.WriteLine("Kreisförmiges Muster NICHT korrekt konfiguriert.")
+            except Exception as e:
+                lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
+            finally:
+                pattern_builder.Destroy()
+                        
 # Analysiert Kanten für Rechtecke
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
@@ -621,17 +692,21 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
         lw.WriteLine("\n")
 
     
-    
+    check_circular_pattern_feature(workPart, lw)
 
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Grundlagenprüfung: Preset {EXERCISE_NUMBER}")
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
+    # Überprüfung, ob das Extrusionsfeature EXTRUDE(7) mit den erforderlichen Längen vorhanden ist
+    extrude_feature_found = check_passfeder_feature_with_lengths(workPart, lw)
+
     lw.WriteLine(f"Erzeugung Features:\nPassfeder: {'JA, Skizze korrekt.' if passfeder_feature_found else 'NEIN'}")
     lw.WriteLine(f"Keilwelle: {'JA, Skizze korrekt.' if keilwelle_feature_found else 'NEIN'}")
     # Überprüfung, ob das Extrusionsfeature EXTRUDE(7) mit den erforderlichen Längen vorhanden ist
-    extrude_feature_found = check_extrude_feature_with_lengths(workPart, lw)
+    extrude_feature_found = check_keilwelle_feature_with_lengths(workPart, lw)
+
     lw.WriteLine(f"Extrude Feature Keilwelle: {'JA, mit richtigen Maßen' if extrude_feature_found else 'NEIN'}")
 
     # Zählen von Pattern- und Mirror-Features
