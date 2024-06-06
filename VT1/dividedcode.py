@@ -344,16 +344,14 @@ def check_extrude_feature_with_lengths(workPart, lw):
                         elif isinstance(curve, NXOpen.Arc):
                             lengths.append(round(curve.Radius, 3))  # Hier Radius verwenden
 
-
                     if all(length in lengths for length in required_lengths):
                         lw.WriteLine("Extrude Feature EXTRUDE(7) mit den erforderlichen Längen vorhanden.")
                         return True
-                    else:
-                        lw.WriteLine("Extrude Feature EXTRUDE(7) ohne die erforderlichen Längen gefunden.")
             except Exception as e:
                 lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
             finally:
                 builder.Destroy()
+    lw.WriteLine("Extrude Feature EXTRUDE(7) ohne die erforderlichen Längen gefunden.")
     return False
 
 # Analysiert Kanten für Rechtecke
@@ -622,8 +620,8 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
             lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
         lw.WriteLine("\n")
 
-    # Muster-Features zählen
-    total_patterns = get_pattern_feature_count(workPart, lw)
+    
+    
 
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
@@ -634,7 +632,7 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
     lw.WriteLine(f"Keilwelle: {'JA, Skizze korrekt.' if keilwelle_feature_found else 'NEIN'}")
     # Überprüfung, ob das Extrusionsfeature EXTRUDE(7) mit den erforderlichen Längen vorhanden ist
     extrude_feature_found = check_extrude_feature_with_lengths(workPart, lw)
-    lw.WriteLine(f"Extrude Feature: {'JA, Skizze korrekt.' if extrude_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Extrude Feature Keilwelle: {'JA, mit richtigen Maßen' if extrude_feature_found else 'NEIN'}")
 
     # Zählen von Pattern- und Mirror-Features
     total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
