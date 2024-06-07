@@ -387,44 +387,216 @@ def check_keilwelle_feature_with_lengths(workPart, lw):
 
     return False
 
+def check_faces_against_reference_ue1(workPart, lw):
+    """
+    Überprüft das Vorhandensein von Flächen im vorliegenden Körper gegen eine Musterlösung.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Analyse der vorhandenen Flächen gegen die Musterlösung")
+    lw.WriteLine("==================================================")
+
+
+    lw.WriteLine("Starte Überprüfung der Flächen gegen die Musterlösung...")
+
+    # Definition der Musterlösung
+    reference_faces = [
+        ("Planar", [38.253, 39.640, 1.386, 1.386]),
+        ("Planar", [27.395, 1.872, 1.872, 30.267]),
+        ("Planar", [44.900, 44.879, 6.502, 6.502]),
+        ("Planar", [39.799, 1.665, 1.665, 41.243]),
+        ("Planar", [1.552, 35.773, 33.807, 1.552]),
+        ("Planar", [41.243, 1.665, 39.799, 1.665]),
+        ("Planar", [6.502, 6.502, 41.243, 41.373]),
+        ("Planar", [1.522, 44.598, 1.522, 44.091]),
+        ("Cylindrical", [3.002, 141.372, 6.502, 6.502, 1.206, 1.206, 6.502, 1.522, 6.502, 6.502, 6.504, 1.234, 2.103, 1.290, 6.503, 6.502, 6.502, 6.503, 1.872, 28.958, 6.503, 1.552, 6.502, 2.103, 1.290, 1.573, 6.502, 6.502, 6.503, 1.573, 1.822, 6.502, 1.234, 6.502, 6.502, 6.502, 1.872, 1.386, 1.665, 6.502, 1.552, 1.665, 6.504, 6.505, 1.522, 1.822, 6.505, 1.386, 6.502, 6.502, 6.502, 6.502, 1.522, 1.206, 1.206, 6.502, 3.002, 1.573, 6.502, 6.505, 6.502, 1.822, 1.872, 1.522, 2.103, 6.502, 6.502, 2.103, 6.503, 1.822, 6.502, 6.502, 6.502, 6.502, 1.386, 1.665, 6.502, 6.502, 6.503, 1.552, 1.290, 1.234, 1.573, 6.503, 1.872, 6.503, 6.502, 6.504, 1.290, 6.502, 6.505, 1.552, 28.958, 1.234, 1.665, 1.386, 6.504]),
+        ("Cylindrical", [75.398, 75.398]),
+        ("Planar", [1.822, 36.000, 1.822, 38.066]),
+        ("Planar", [75.398]),
+        ("Planar", [6.504, 30.594, 6.504, 30.267]),
+        ("Planar", [27.000, 27.395, 6.505, 6.505]),
+        ("Planar", [1.573, 43.370, 42.426, 1.573]),
+        ("Planar", [6.502, 38.253, 6.502, 38.066]),
+        ("Planar", [44.638, 44.879, 1.206, 1.206]),
+        ("Planar", [6.503, 6.503, 35.773, 36.000]),
+        ("Planar", [6.505, 27.395, 27.000, 6.505]),
+        ("Planar", [28.958, 27.000]),
+        ("Planar", [6.502, 6.502, 44.029, 44.091]),
+        ("Planar", [27.000, 28.958]),
+        ("Planar", [33.807, 1.552, 35.773, 1.552]),
+        ("Planar", [44.879, 44.638, 1.206, 1.206]),
+        ("Planar", [6.502, 6.502, 44.900, 44.879]),
+        ("Planar", [6.502, 44.091, 44.029, 6.502]),
+        ("Planar", [43.452, 1.234, 1.234, 44.029]),
+        ("Planar", [1.386, 39.640, 38.253, 1.386]),
+        ("Planar", [6.502, 39.640, 6.502, 39.799]),
+        ("Planar", [1.234, 44.029, 1.234, 43.452]),
+        ("Planar", [30.594, 6.504, 30.267, 6.504]),
+        ("Planar", [1.290, 42.319, 1.290, 41.373]),
+        ("Planar", [6.502, 43.370, 6.502, 43.452]),
+        ("Planar", [6.502, 38.253, 6.502, 38.066]),
+        ("Planar", [1.822, 1.822, 36.000, 38.066]),
+        ("Planar", [2.103, 2.103, 30.594, 33.541]),
+        ("Planar", [6.503, 33.807, 6.503, 33.541]),
+        ("Planar", [44.598, 44.638, 6.502, 6.502]),
+        ("Planar", [6.502, 44.638, 6.502, 44.598]),
+        ("Planar", [44.598, 1.522, 44.091, 1.522]),
+        ("Planar", [42.319, 6.502, 6.502, 42.426]),
+        ("Planar", [41.243, 6.502, 6.502, 41.373]),
+        ("Planar", [6.502, 39.799, 6.502, 39.640]),
+        ("Planar", [33.807, 6.503, 6.503, 33.541]),
+        ("Planar", [36.000, 6.503, 35.773, 6.503]),
+        ("Planar", [2.103, 2.103, 30.594, 33.541]),
+        ("Planar", [3.002, 44.900, 44.900, 3.002]),
+        ("Planar", [141.372, 75.398]),
+        ("Planar", [1.872, 27.395, 1.872, 30.267]),
+        ("Planar", [1.573, 43.370, 1.573, 42.426]),
+        ("Planar", [6.502, 6.502, 42.426, 42.319]),
+        ("Planar", [43.452, 6.502, 43.370, 6.502]),
+        ("Planar", [1.290, 42.319, 1.290, 41.373])
+    ]
+
+    # Extrahieren der Flächen aus dem aktuellen Werkstück
+    current_faces = []
+    for body in workPart.Bodies:
+        for face in body.GetFaces():
+            face_type = face_type_to_string(face.SolidFaceType)
+            face_edges = face.GetEdges()
+            face_edge_lengths = [round(edge.GetLength(), 3) for edge in face_edges]
+            current_faces.append((face_type, sorted(face_edge_lengths)))
+
+# Überprüfung, ob die Musterflächen im aktuellen Werkstück vorhanden sind
+    total_reference_faces = len(reference_faces)
+    found_reference_faces = 0
+
+    for ref_face in reference_faces:
+        ref_type, ref_edges = ref_face
+        found = any(ref_type == cur_type and sorted(ref_edges) == sorted(cur_edges) for cur_type, cur_edges in current_faces)
+        if found:
+            # Kann verwendet werden, um anzugeben welche flächen vorhanden sind 
+            #lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist vorhanden.")
+            found_reference_faces += 1
+        else:
+            lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist nicht vorhanden.")
+
+    lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
+    lw.WriteLine("Überprüfung abgeschlossen.")
+
+def check_faces_against_reference_vt1(workPart, lw):
+    """
+    Überprüft das Vorhandensein von Flächen im vorliegenden Körper gegen eine Musterlösung.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Analyse der vorhandenen Flächen gegen die Musterlösung")
+    lw.WriteLine("==================================================")
+
+
+    lw.WriteLine("Starte Überprüfung der Flächen gegen die Musterlösung...")
+
+    # Definition der Musterlösung
+    reference_faces = [
+    ("Planar", [109.956, 106.814]),
+    ("Planar", [122.522]),
+    ("Cylindrical", [125.664, 125.664]),
+    ("Planar", [87.000, 3.106, 87.000, 3.106]),
+    ("Planar", [9.727, 8.113, 3.106, 3.106, 9.727, 3.106, 3.106, 8.113, 3.106, 3.106, 9.727, 3.106, 3.106, 9.727, 3.106, 8.113, 8.113, 8.113, 3.106, 8.113, 3.106, 3.106, 9.727, 9.727]),
+    ("Cylindrical", [109.956, 109.956]),
+    ("Planar", [157.080, 125.664]),
+    ("Cylindrical", [87.000, 8.113, 87.000, 8.113]),
+    ("Planar", [157.080, 172.788]),
+    ("Planar", [21.991, 31.000, 31.000, 21.991]),
+    ("Planar", [3.106, 87.000, 87.000, 3.106]),
+    ("Cylindrical", [8.113, 87.000, 8.113, 87.000]),
+    ("Cylindrical", [122.522, 122.522]),
+    ("Planar", [3.106, 3.106, 8.113, 8.076]),
+    ("Cylindrical", [157.080, 157.080]),
+    ("Planar", [87.000, 3.106, 3.106, 87.000]),
+    ("Cylindrical", [172.788, 172.788]),
+    ("Planar", [87.000, 3.106, 3.106, 87.000]),
+    ("Planar", [141.372, 125.664]),
+    ("Planar", [87.000, 3.106, 87.000, 3.106]),
+    ("Cylindrical", [9.727, 106.814, 87.000, 87.000, 8.076, 9.727, 87.000, 87.000, 8.076, 87.000, 87.000, 9.727, 87.000, 9.727, 87.000, 87.000, 87.000, 8.076, 87.000, 8.076, 8.076, 8.076, 87.000, 9.727, 9.727]),
+    ("Cylindrical", [8.113, 8.113, 87.000, 87.000]),
+    ("Planar", [125.664, 122.522]),
+    ("Planar", [4.383, 4.383, 31.000, 31.000]),
+    ("Planar", [3.106, 8.076, 8.113, 3.106]),
+    ("Cylindrical", [8.113, 87.000, 8.113, 87.000]),
+    ("Planar", [8.113, 3.106, 3.106, 8.076]),
+    ("Planar", [4.383, 31.000, 31.000, 4.383]),
+    ("Cylindrical", [8.113, 87.000, 8.113, 87.000]),
+    ("Planar", [87.000, 3.106, 3.106, 87.000]),
+    ("Planar", [87.000, 87.000, 3.106, 3.106]),
+    ("Cylindrical", [141.372, 141.372, 22.128, 31.000, 31.000, 22.128]),
+    ("Planar", [3.106, 3.106, 87.000, 87.000]),
+    ("Cylindrical", [122.522, 122.522]),
+    ("Cylindrical", [22.128, 4.383, 4.383, 21.991]),
+    ("Planar", [122.522, 109.956]),
+    ("Planar", [141.372, 172.788]),
+    ("Planar", [3.106, 87.000, 3.106, 87.000]),
+    ("Planar", [8.113, 3.106, 8.076, 3.106]),
+    ("Planar", [125.664, 122.522]),
+    ("Planar", [3.106, 87.000, 87.000, 3.106]),
+    ("Planar", [3.106, 87.000, 87.000, 3.106]),
+    ("Cylindrical", [8.113, 8.113, 87.000, 87.000]),
+    ("Planar", [87.000, 3.106, 3.106, 87.000]),
+    ("Planar", [8.076, 8.113, 3.106, 3.106]),
+    ("Cylindrical", [21.991, 4.383, 4.383, 22.128]),
+    ("Cylindrical", [125.664, 125.664]),
+    ("Planar", [8.113, 3.106, 3.106, 8.076])
+]
+
+    # Extrahieren der Flächen aus dem aktuellen Werkstück
+    current_faces = []
+    for body in workPart.Bodies:
+        for face in body.GetFaces():
+            face_type = face_type_to_string(face.SolidFaceType)
+            face_edges = face.GetEdges()
+            face_edge_lengths = [round(edge.GetLength(), 3) for edge in face_edges]
+            current_faces.append((face_type, sorted(face_edge_lengths)))
+
+# Überprüfung, ob die Musterflächen im aktuellen Werkstück vorhanden sind
+    total_reference_faces = len(reference_faces)
+    found_reference_faces = 0
+
+    for ref_face in reference_faces:
+        ref_type, ref_edges = ref_face
+        found = any(ref_type == cur_type and sorted(ref_edges) == sorted(cur_edges) for cur_type, cur_edges in current_faces)
+        if found:
+            # Kann verwendet werden, um anzugeben welche flächen vorhanden sind 
+            #lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist vorhanden.")
+            found_reference_faces += 1
+        else:
+            lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist nicht vorhanden.")
+
+    lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
+    lw.WriteLine("Überprüfung abgeschlossen.")
+
 def check_circular_pattern_feature(workPart, lw):
-    """
-    Überprüft, ob ein kreisförmiges Musterformelement korrekt konfiguriert ist.
-    """
-    for feature in workPart.Features:
-        if isinstance(feature, NXOpen.Features.PatternFeature):
-            pattern_builder = workPart.Features.CreatePatternFeatureBuilder(feature)
-            try:
-                pattern_definition = pattern_builder.PatternDefinition
-                if pattern_definition.PatternType == NXOpen.GeometricUtilities.PatternDefinition.PatternTypeOptions.Circular:
-                    lw.WriteLine(f"Pattern Feature {feature.JournalIdentifier} ist kreisförmig.")
+    # Find the pattern feature
+    pattern_features = [feat for feat in workPart.Features if isinstance(feat, NXOpen.Features.PatternFeature)]
+    for pattern_feature in pattern_features:
+        try:
+            pattern_builder = workPart.Features.CreatePatternFeatureBuilder(pattern_feature)
+            lw.WriteLine(f"Pattern Feature {pattern_feature.JournalIdentifier} hat den Muster-Typ: {pattern_builder.PatternMethod}")
+            lw.WriteLine(f"Output Option: {pattern_builder.OutputOption}")
+            lw.WriteLine(f"Expression Option: {pattern_builder.ExpressionOption}")
+            
+            # Fetch more properties if available
+            reference_point = pattern_builder.ReferencePoint
+            lw.WriteLine(f"Reference Point: {reference_point}")
 
-                    # Überprüfen der Anzahl der Instanzen
-                    instance_count = pattern_definition.CircularDefinition.AngularSpacing.NCopies.Value
-                    lw.WriteLine(f"Anzahl der Instanzen: {instance_count}")
+            pattern_service = pattern_builder.PatternService
+            lw.WriteLine(f"Pattern Service: {pattern_service}")
+            
+            feature_list = pattern_builder.FeatureList
+            lw.WriteLine(f"Number of Features: {feature_list.GetCount()}")
+            
+        except Exception as e:
+            lw.WriteLine(f"Fehler bei der Analyse des Features {pattern_feature.JournalIdentifier}: {str(e)}")
+        finally:
+            pattern_builder.Destroy()
 
-                    # Überprüfen des Winkels zwischen den Instanzen
-                    angle = pattern_definition.CircularDefinition.AngularSpacing.PitchAngle.Value
-                    lw.WriteLine(f"Winkel zwischen den Instanzen: {angle}")
 
-                    # Überprüfen des Radius
-                    radius = pattern_definition.CircularDefinition.RadialSpacing.PitchDistance.Value
-                    lw.WriteLine(f"Radius des Musters: {radius}")
 
-                    # Beispiel für die Überprüfung spezifischer Werte
-                    required_instance_count = 6
-                    required_angle = 60.0  # Beispielwert, anpassen nach Bedarf
-                    required_radius = 10.0  # Beispielwert, anpassen nach Bedarf
-
-                    if instance_count == required_instance_count and math.isclose(angle, required_angle, rel_tol=1e-5) and math.isclose(radius, required_radius, rel_tol=1e-5):
-                        lw.WriteLine("Kreisförmiges Muster korrekt konfiguriert.")
-                    else:
-                        lw.WriteLine("Kreisförmiges Muster NICHT korrekt konfiguriert.")
-            except Exception as e:
-                lw.WriteLine(f"Fehler bei der Analyse des Features {feature.JournalIdentifier}: {str(e)}")
-            finally:
-                pattern_builder.Destroy()
-                        
 # Analysiert Kanten für Rechtecke
 def analyze_edges_for_rectangle(lw, all_edges, sketch):
     found_edges = []
@@ -471,12 +643,10 @@ def get_curve_length(curve):
         return 0
 
 def is_pattern_feature(feature):
-    # Überprüft, ob das Feature ein PatternFeature ist
-    return "PatternFeature" in feature.JournalIdentifier
+    return isinstance(feature, NXOpen.Features.PatternFeature)
 
 def is_mirror_feature(feature):
-    # Überprüft, ob das Feature ein MirrorFeature ist
-    return "MirrorFeature" in feature.JournalIdentifier
+    return isinstance(feature, NXOpen.Features.MirrorFeature)
 
 def count_pattern_and_mirror_features(workPart, lw):
     pattern_count = 0
@@ -600,7 +770,7 @@ def list_geometry_properties_in_sketches(theSession, workPart):
 
     # Muster-Features zählen
     total_patterns = get_pattern_feature_count(workPart, lw)
-
+    check_faces_against_reference_ue1(workPart, lw)
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
@@ -693,7 +863,7 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
 
     
     check_circular_pattern_feature(workPart, lw)
-
+    check_faces_against_reference_vt1(workPart, lw)
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Grundlagenprüfung: Preset {EXERCISE_NUMBER}")
