@@ -4,7 +4,7 @@ import math
 from itertools import combinations
 
 # Globale Variable zur Festlegung der Übung
-EXERCISE_NUMBER = 4  # Setzen Sie dies auf 1 oder 2 je nach Übung
+EXERCISE_NUMBER = 1  # Setzen Sie dies auf 1 oder 2 je nach Übung
 
 # 1= Übung 1, 2= Vertiefungsübung 1
 # 3= Übung 2, 4= Vertiefungsübung 2
@@ -703,6 +703,29 @@ def check_faces_against_reference_vt2(workPart, lw):
     lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
     lw.WriteLine("Überprüfung abgeschlossen.")
 
+def get_mass_properties(body, workPart):
+    measure_manager = NXOpen.MeasureManager(workPart)
+    mass_properties = measure_manager.MeasureBodiesMassProperties([body])
+    mass = mass_properties.Mass
+    surface_area = mass_properties.Area
+    center_of_gravity = mass_properties.CenterOfGravity
+    return mass, surface_area, center_of_gravity
+
+def print_mass_properties(lw, body, workPart):
+    mass, surface_area, center_of_gravity = get_mass_properties(body, workPart)
+    lw.WriteLine(f"  Masse: {mass:.3f}")
+    lw.WriteLine(f"  Oberfläche: {surface_area:.3f}")
+    lw.WriteLine(f"  Schwerpunkt: X: {center_of_gravity.X:.3f}, Y: {center_of_gravity.Y:.3f}, Z: {center_of_gravity.Z:.3f}")
+
+# Erweiterte Funktion zum Ausgeben der Körperdetails
+def print_body_details(lw, body, body_idx, body_count, workPart):
+    lw.WriteLine("-" * 50)
+    lw.WriteLine(f"Körper {body_idx}/{body_count} wird inspiziert: {body.Name}")
+    lw.WriteLine(f"Journal Identifier: {body.JournalIdentifier}")
+    #print_mass_properties(lw, body, workPart)  # Druckt die Masseninformationen
+    for face_idx, face in enumerate(body.GetFaces(), start=1):
+        print_face_details(lw, face, face_idx)
+
 def check_circular_pattern_feature(workPart, lw):
     # Find the pattern feature
     pattern_features = [feat for feat in workPart.Features if isinstance(feat, NXOpen.Features.PatternFeature)]
@@ -802,7 +825,7 @@ def list_features_and_geometries_ue1(theSession, workPart):
     lw.WriteLine("Gesamtanzahl der Körper im Teil: " + str(body_count))
 
     for body_idx, body in enumerate(workPart.Bodies, start=1):
-        print_body_details(lw, body, body_idx, body_count)
+        print_body_details(lw, body, body_idx, body_count, workPart)
     
     lw.WriteLine("=" * 50)
     lw.WriteLine("Feature-Analyse:")
