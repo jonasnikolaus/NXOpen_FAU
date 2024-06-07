@@ -4,7 +4,7 @@ import math
 from itertools import combinations
 
 # Globale Variable zur Festlegung der Übung
-EXERCISE_NUMBER = 2  # Setzen Sie dies auf 1 oder 2 je nach Übung
+EXERCISE_NUMBER = 4  # Setzen Sie dies auf 1 oder 2 je nach Übung
 
 # 1= Übung 1, 2= Vertiefungsübung 1
 # 3= Übung 2, 4= Vertiefungsübung 2
@@ -564,6 +564,145 @@ def check_faces_against_reference_vt1(workPart, lw):
     lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
     lw.WriteLine("Überprüfung abgeschlossen.")
 
+def check_faces_against_reference_ue2(workPart, lw):
+    """
+    Überprüft das Vorhandensein von Flächen im vorliegenden Körper gegen eine Musterlösung.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Analyse der vorhandenen Flächen gegen die Musterlösung")
+    lw.WriteLine("==================================================")
+
+
+    lw.WriteLine("Starte Überprüfung der Flächen gegen die Musterlösung...")
+
+    # Definition der Musterlösung
+    reference_faces = [
+    ("Cylindrical", [1.152, 38.000, 1.152, 38.000]),
+    ("Planar", [38.000, 38.000, 7.000, 7.000]),
+    ("Spherical", [94.248]),
+    ("Planar", [38.000, 38.000, 7.000, 7.000]),
+    ("Planar", [5.000, 6.000, 5.000, 9.425, 7.854]),
+    ("Parametric", [21.104, 25.235, 9.000, 10.997]),
+    ("Cylindrical", [94.248, 19.990, 38.000, 19.990, 38.000, 94.248]),
+    ("Spherical", [84.823]),
+    ("Cylindrical", [7.854, 7.854]),
+    ("Cylindrical", [3.380, 3.380, 17.279, 17.540]),
+    ("Planar", [6.000, 8.838, 8.838, 6.051]),
+    ("Cylindrical", [7.854, 7.854]),
+    ("Planar", [38.000, 3.380, 3.380, 38.000]),
+    ("Conical", [41.539, 84.125]),
+    ("Conical", [0.707, 9.425, 0.707, 10.996]),
+    ("Planar", [38.000, 21.991, 38.000, 21.991, 38.000, 38.000, 10.996, 10.996]),
+    ("Conical", [7.854]),
+    ("Planar", [38.000, 0.707, 38.000, 0.707]),
+    ("Cylindrical", [2.500, 2.500, 9.425, 9.425]),
+    ("Parametric", [21.104, 25.235, 9.000, 10.997]),
+    ("Surface of Revolution", [31.416, 41.539]),
+    ("Cylindrical", [21.991, 10.997, 10.997]),
+    ("Conical", [0.707, 9.425, 10.996, 0.707]),
+    ("Planar", [38.000, 3.380, 3.380, 38.000]),
+    ("Planar", [2.500, 2.500, 5.000, 8.838, 5.000, 8.838, 28.000, 38.000]),
+    ("Conical", [21.991, 84.823]),
+    ("Parametric", [14.998, 19.997, 26.343, 15.700]),
+    ("Cylindrical", [15.700, 15.700, 31.416]),
+    ("Cylindrical", [21.991, 21.991, 7.000, 7.000]),
+    ("Cylindrical", [84.823, 84.823, 28.000, 6.051, 6.051, 28.000]),
+    ("Blending", [19.990, 1.152, 17.540, 1.152]),
+    ("Planar", [2.500, 2.500, 5.000, 5.000, 8.838, 8.838, 28.000, 38.000]),
+    ("Parametric", [19.997, 14.998, 26.343, 15.700]),
+    ("Blending", [1.152, 1.152, 19.990, 17.540]),
+    ("Cylindrical", [2.500, 2.500, 9.425, 9.425]),
+    ("Planar", [38.000, 0.707, 0.707, 38.000]),
+    ("Planar", [38.000, 38.000, 17.279, 21.991, 38.000, 38.000, 17.279, 21.991]),
+    ("Planar", [8.838, 6.000, 8.838, 6.051]),
+    ("Planar", [5.000, 5.000, 6.000, 9.425, 7.854]),
+    ("Planar", [14.998, 14.998, 9.000, 9.000]),
+    ("Cylindrical", [1.152, 38.000, 38.000, 1.152]),
+    ("Cylindrical", [17.279, 3.380, 3.380, 17.540]),
+    ("Surface of Revolution", [94.248, 84.125]),
+    ("Conical", [7.854]),
+    ("Cylindrical", [7.000, 7.000, 21.991, 21.991])
+    ]
+
+    # Extrahieren der Flächen aus dem aktuellen Werkstück
+    current_faces = []
+    for body in workPart.Bodies:
+        for face in body.GetFaces():
+            face_type = face_type_to_string(face.SolidFaceType)
+            face_edges = face.GetEdges()
+            face_edge_lengths = [round(edge.GetLength(), 3) for edge in face_edges]
+            current_faces.append((face_type, sorted(face_edge_lengths)))
+
+# Überprüfung, ob die Musterflächen im aktuellen Werkstück vorhanden sind
+    total_reference_faces = len(reference_faces)
+    found_reference_faces = 0
+
+    for ref_face in reference_faces:
+        ref_type, ref_edges = ref_face
+        found = any(ref_type == cur_type and sorted(ref_edges) == sorted(cur_edges) for cur_type, cur_edges in current_faces)
+        if found:
+            # Kann verwendet werden, um anzugeben welche flächen vorhanden sind 
+            #lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist vorhanden.")
+            found_reference_faces += 1
+        else:
+            lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist nicht vorhanden.")
+
+    lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
+    lw.WriteLine("Überprüfung abgeschlossen.")
+
+def check_faces_against_reference_vt2(workPart, lw):
+    """
+    Überprüft das Vorhandensein von Flächen im vorliegenden Körper gegen eine Musterlösung.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Analyse der vorhandenen Flächen gegen die Musterlösung")
+    lw.WriteLine("==================================================")
+
+
+    lw.WriteLine("Starte Überprüfung der Flächen gegen die Musterlösung...")
+
+    # Definition der Musterlösung
+    reference_faces = [
+    ("Cylindrical", [56.549, 56.549]),
+    ("Cylindrical", [28.274, 28.274]),
+    ("Cylindrical", [56.549, 56.549]),
+    ("Planar", [865.720, 827.500]),
+    ("Planar", [444.885, 113.097, 28.274, 56.549, 28.274, 56.549, 56.549, 56.549]),
+    ("Cylindrical", [28.274, 28.274]),
+    ("Offset", [827.500, 439.402]),
+    ("Cylindrical", [113.097, 113.097]),
+    ("Cylindrical", [56.549, 56.549]),
+    ("Parametric", [444.885, 865.720]),
+    ("Planar", [439.402, 113.097, 28.274, 56.549, 28.274, 56.549, 56.549, 56.549]),
+    ("Cylindrical", [56.549, 56.549])
+]
+
+    # Extrahieren der Flächen aus dem aktuellen Werkstück
+    current_faces = []
+    for body in workPart.Bodies:
+        for face in body.GetFaces():
+            face_type = face_type_to_string(face.SolidFaceType)
+            face_edges = face.GetEdges()
+            face_edge_lengths = [round(edge.GetLength(), 3) for edge in face_edges]
+            current_faces.append((face_type, sorted(face_edge_lengths)))
+
+# Überprüfung, ob die Musterflächen im aktuellen Werkstück vorhanden sind
+    total_reference_faces = len(reference_faces)
+    found_reference_faces = 0
+
+    for ref_face in reference_faces:
+        ref_type, ref_edges = ref_face
+        found = any(ref_type == cur_type and sorted(ref_edges) == sorted(cur_edges) for cur_type, cur_edges in current_faces)
+        if found:
+            # Kann verwendet werden, um anzugeben welche flächen vorhanden sind 
+            #lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist vorhanden.")
+            found_reference_faces += 1
+        else:
+            lw.WriteLine(f"Fläche vom Typ '{ref_type}' mit Kantenlängen {ref_edges} ist nicht vorhanden.")
+
+    lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
+    lw.WriteLine("Überprüfung abgeschlossen.")
+
 def check_circular_pattern_feature(workPart, lw):
     # Find the pattern feature
     pattern_features = [feat for feat in workPart.Features if isinstance(feat, NXOpen.Features.PatternFeature)]
@@ -646,8 +785,10 @@ def get_pattern_feature_count(workPart, lw):
    # lw.WriteLine(f"Pattern Feature mit spezifischen Dimensionen kommt {pattern_count} mal vor.")
     return pattern_count
 
+
+#Ausgabe Übung 1
 # Listet Merkmale und Geometrien auf
-def list_features_and_geometries(theSession, workPart):
+def list_features_and_geometries_ue1(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
     
@@ -684,7 +825,7 @@ def list_features_and_geometries(theSession, workPart):
 
 
 # Listet Geometrieeigenschaften in Skizzen auf
-def list_geometry_properties_in_sketches(theSession, workPart):
+def list_geometry_properties_in_sketches_ue1(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
 
@@ -736,7 +877,7 @@ def list_geometry_properties_in_sketches(theSession, workPart):
 
 #Ab hier: Vertiefungsübung 1
 # Listet Merkmale und Geometrien auf
-def list_features_and_geometries_exercise2(theSession, workPart):
+def list_features_and_geometries_vt1(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
     
@@ -773,7 +914,7 @@ def list_features_and_geometries_exercise2(theSession, workPart):
 
 
 # Listet Geometrieeigenschaften in Skizzen auf
-def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
+def list_geometry_properties_in_sketches_vt1(theSession, workPart):
     lw = theSession.ListingWindow
     lw.Open()
 
@@ -834,20 +975,208 @@ def list_geometry_properties_in_sketches_exercise2(theSession, workPart):
     lw.WriteLine("\n")
     lw.Close()
 
+#Ab hier: Übung 2
+# Listet Merkmale und Geometrien auf
+def list_features_and_geometries_ue2(theSession, workPart):
+    lw = theSession.ListingWindow
+    lw.Open()
+    
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Körper und Geometrien")
+    lw.WriteLine("=" * 50)
+
+    body_count = 0
+    for body in workPart.Bodies:
+        body_count += 1
+    lw.WriteLine("Gesamtanzahl der Körper im Teil: " + str(body_count))
+
+    for body_idx, body in enumerate(workPart.Bodies, start=1):
+        print_body_details(lw, body, body_idx, body_count)
+    
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Feature-Analyse:")
+    lw.WriteLine("=" * 50)
+    for feature in workPart.Features:
+        lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
+        if isinstance(feature, NXOpen.Features.Extrude):
+            print_extrude_details(lw, feature, workPart)
+        elif isinstance(feature, NXOpen.Features.Revolve):
+            print_revolve_details(lw, feature, workPart)
+        elif isinstance(feature, NXOpen.Features.HolePackage):
+            print_hole_details(lw, feature, workPart)
+
+    # Überprüfen und Zählen der Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+    lw.WriteLine(f"Anzahl der Pattern Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror Features: {total_mirrors}")
+
+    lw.Close()
+
+
+# Listet Geometrieeigenschaften in Skizzen auf
+def list_geometry_properties_in_sketches_ue2(theSession, workPart):
+    lw = theSession.ListingWindow
+    lw.Open()
+
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Skizzen")
+    lw.WriteLine("=" * 50)
+
+    # Variablen zur Erfassung des Zustands der Features über alle Skizzen hinweg
+    rotations_feature_found = False
+    pattern_feature_found = False
+
+    for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
+        lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
+        all_edges = []
+        circles = []
+
+        for curve in sketch.GetAllGeometry():
+            process_geometry(curve, all_edges, circles)
+
+        # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
+        if check_specific_edge_lengths(all_edges):
+            rotations_feature_found = True
+        if check_pattern_feature(all_edges):
+            pattern_feature_found = True
+
+        for edge in all_edges:
+            edge_type = "Linear" if isinstance(edge, NXOpen.Line) else "Circular" if isinstance(edge, NXOpen.Arc) else "Unbekannt"
+            lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
+        lw.WriteLine("\n")
+
+    # Muster-Features zählen
+    total_patterns = get_pattern_feature_count(workPart, lw)
+    check_faces_against_reference_ue2(workPart, lw)
+    # Gesamtprüfung für alle Skizzen ausgeben
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
+    
+    # Zählen von Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
+    lw.WriteLine("\n")
+    lw.Close()
+
+#Ab hier: Vertiefungsübung 2
+# Listet Merkmale und Geometrien auf
+def list_features_and_geometries_vt2(theSession, workPart):
+    lw = theSession.ListingWindow
+    lw.Open()
+    
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Körper und Geometrien")
+    lw.WriteLine("=" * 50)
+
+    body_count = 0
+    for body in workPart.Bodies:
+        body_count += 1
+    lw.WriteLine("Gesamtanzahl der Körper im Teil: " + str(body_count))
+
+    for body_idx, body in enumerate(workPart.Bodies, start=1):
+        print_body_details(lw, body, body_idx, body_count)
+    
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Feature-Analyse:")
+    lw.WriteLine("=" * 50)
+    for feature in workPart.Features:
+        lw.WriteLine(f"Analyse des Features: {feature.JournalIdentifier} vom Typ {type(feature)}")
+        if isinstance(feature, NXOpen.Features.Extrude):
+            print_extrude_details(lw, feature, workPart)
+        elif isinstance(feature, NXOpen.Features.Revolve):
+            print_revolve_details(lw, feature, workPart)
+        elif isinstance(feature, NXOpen.Features.HolePackage):
+            print_hole_details(lw, feature, workPart)
+
+    # Überprüfen und Zählen der Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+    lw.WriteLine(f"Anzahl der Pattern Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror Features: {total_mirrors}")
+
+    lw.Close()
+
+
+# Listet Geometrieeigenschaften in Skizzen auf
+def list_geometry_properties_in_sketches_vt2(theSession, workPart):
+    lw = theSession.ListingWindow
+    lw.Open()
+
+    lw.WriteLine("=" * 50)
+    lw.WriteLine("Analyse der Skizzen")
+    lw.WriteLine("=" * 50)
+
+    # Variablen zur Erfassung des Zustands der Features über alle Skizzen hinweg
+    rotations_feature_found = False
+    pattern_feature_found = False
+
+    for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
+        lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
+        all_edges = []
+        circles = []
+
+        for curve in sketch.GetAllGeometry():
+            process_geometry(curve, all_edges, circles)
+
+        # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
+        if check_specific_edge_lengths(all_edges):
+            rotations_feature_found = True
+        if check_pattern_feature(all_edges):
+            pattern_feature_found = True
+
+        for edge in all_edges:
+            edge_type = "Linear" if isinstance(edge, NXOpen.Line) else "Circular" if isinstance(edge, NXOpen.Arc) else "Unbekannt"
+            lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
+        lw.WriteLine("\n")
+
+    # Muster-Features zählen
+    total_patterns = get_pattern_feature_count(workPart, lw)
+    check_faces_against_reference_vt2(workPart, lw)
+    # Gesamtprüfung für alle Skizzen ausgeben
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
+    lw.WriteLine("=" * 50)
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
+    
+    # Zählen von Pattern- und Mirror-Features
+    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+
+    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
+    lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
+    lw.WriteLine("\n")
+    lw.Close()
+
+
 def main():
     theSession = NXOpen.Session.GetSession()
     workPart = theSession.Parts.Work
 
     if EXERCISE_NUMBER == 1:
         # Führe Prüfungen für Übung 1 durch
-        list_geometry_properties_in_sketches(theSession, workPart)
-        list_features_and_geometries(theSession, workPart)
+        list_geometry_properties_in_sketches_ue1(theSession, workPart)
+        list_features_and_geometries_ue1(theSession, workPart)
     elif EXERCISE_NUMBER == 2:
+        # Führe Prüfungen für Vertiefung 1 durch
+        list_geometry_properties_in_sketches_vt1(theSession, workPart)
+        list_features_and_geometries_vt1(theSession, workPart)
+    elif EXERCISE_NUMBER == 3:
         # Führe Prüfungen für Übung 2 durch
-        list_geometry_properties_in_sketches_exercise2(theSession, workPart)
-        list_features_and_geometries_exercise2(theSession, workPart)
+        list_geometry_properties_in_sketches_ue2(theSession, workPart)
+        list_features_and_geometries_ue2(theSession, workPart)
+    elif EXERCISE_NUMBER == 4:
+        # Führe Prüfungen für Vertiefung 2 durch
+        list_geometry_properties_in_sketches_vt2(theSession, workPart)
+        list_features_and_geometries_vt2(theSession, workPart)
+
     else:
-        print("Ungültige Übungsnummer. Bitte setzen Sie EXERCISE_NUMBER auf 1 oder 2.")
+        print("Ungültige Übungsnummer. Bitte setzen Sie EXERCISE_NUMBER auf 1, 2, 3 oder 4.")
 
 if __name__ == '__main__':
     main()
