@@ -234,12 +234,6 @@ def print_revolve_details(lw, feature, workPart):
     finally:
         revolve_builder.Destroy()
 
-
-def print_sketch_details(lw, sketch, sketch_idx):
-    lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
-    #all_edges = []
-    #circles = []
-
 def process_geometry(curve, all_edges, circles):
     if isinstance(curve, NXOpen.Arc):
         circles.append(curve)
@@ -594,53 +588,6 @@ def check_circular_pattern_feature(workPart, lw):
             lw.WriteLine(f"Fehler bei der Analyse des Features {pattern_feature.JournalIdentifier}: {str(e)}")
         finally:
             pattern_builder.Destroy()
-
-
-
-# Analysiert Kanten für Rechtecke
-def analyze_edges_for_rectangle(lw, all_edges, sketch):
-    found_edges = []
-    for combo in combinations(all_edges, 4):
-        if is_rectangle(combo):
-            print_rectangle_details(lw, combo, sketch)
-            found_edges.extend(combo)
-    return found_edges
-
-# Gibt Details eines Kreises aus
-def print_circle_details(lw, circle, sketch):
-    lw.WriteLine(f"Kreis gefunden in Skizze: {sketch.Name}")
-    lw.WriteLine(f"Radius: {circle.Radius:.3f}")
-    lw.WriteLine(f"Mittelpunkt: ({circle.CenterPoint.X:.3f}, {circle.CenterPoint.Y:.3f}, {circle.CenterPoint.Z:.3f})")
-    return circle
-
-# Gibt Details eines Rechtecks aus
-def print_rectangle_details(lw, rectangle_edges, sketch):
-    lengths = sorted([edge.GetLength() for edge in rectangle_edges])
-    lw.WriteLine(f"Rechteck gefunden in Skizze: {sketch.Name}")
-    lw.WriteLine(f"Seitenlängen: {lengths[0]:.3f}, {lengths[2]:.3f} (Länge, Breite)")
-    return rectangle_edges
-
-# Überprüft, ob die gegebenen Kanten ein Rechteck bilden
-def is_rectangle(edges):
-    # Sort the edges by length
-    sorted_edges = sorted(edges, key=lambda e: e.GetLength())
-    # Check if two pairs of edges are each of equal length
-    if math.isclose(sorted_edges[0].GetLength(), sorted_edges[1].GetLength()) and math.isclose(sorted_edges[2].GetLength(), sorted_edges[3].GetLength()):
-        return True
-    return False
-
-def get_curve_length(curve):
-    """
-    Berechnet die Länge einer Kurve basierend auf ihrem Typ.
-    """
-    if isinstance(curve, NXOpen.Line):
-        start_point = curve.StartPoint
-        end_point = curve.EndPoint
-        return math.sqrt((end_point.X - start_point.X)**2 + (end_point.Y - start_point.Y)**2 + (end_point.Z - start_point.Z)**2)
-    elif isinstance(curve, NXOpen.Arc):
-        return curve.GetLength()
-    else:
-        return 0
 
 def is_pattern_feature(feature):
     return isinstance(feature, NXOpen.Features.PatternFeature)
