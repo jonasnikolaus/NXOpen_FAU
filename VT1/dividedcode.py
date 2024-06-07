@@ -1,5 +1,5 @@
-import NXOpen
-import NXOpen.Features
+import NXOpen # type: ignore
+import NXOpen.Features # type: ignore
 import math
 from itertools import combinations
 
