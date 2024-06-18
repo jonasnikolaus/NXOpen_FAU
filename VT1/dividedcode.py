@@ -9,6 +9,157 @@ EXERCISE_NUMBER = 1  # Setzen Sie dies auf 1 oder 2 je nach Übung
 # 1= Übung 1, 2= Vertiefungsübung 1
 # 3= Übung 2, 4= Vertiefungsübung 2
 
+# Musterlösungsdaten (alle 147 Kanten)
+REFERENCE_EDGES_UE1 = [
+    {'length': 1.573, 'start': (-21.685, 6.000, 16.000), 'end': (-21.213, 7.500, 16.000)},
+    {'length': 6.502, 'start': (-19.900, 10.500, 16.000), 'end': (-19.820, 10.650, 9.500)},
+    {'length': 6.502, 'start': (22.319, -2.850, 9.500), 'end': (22.299, -3.000, 16.000)},
+    {'length': 42.426, 'start': (21.213, 7.500, 16.000), 'end': (-21.213, 7.500, 16.000)},
+    {'length': 42.426, 'start': (21.213, -7.500, 16.000), 'end': (-21.213, -7.500, 16.000)},
+    {'length': 75.398, 'start': (0.000, 12.000, 0.000), 'end': (0.000, 12.000, 0.000)},
+    {'length': 39.640, 'start': (19.820, 10.650, 9.500), 'end': (-19.820, 10.650, 9.500)},
+    {'length': 43.452, 'start': (21.726, 5.850, 9.500), 'end': (-21.726, 5.850, 9.500)},
+    {'length': 41.373, 'start': (20.686, 8.850, 9.500), 'end': (-20.686, 8.850, 9.500)},
+    {'length': 44.900, 'start': (22.450, 1.500, 16.000), 'end': (-22.450, 1.500, 16.000)},
+    {'length': 1.290, 'start': (-20.686, -8.850, 9.500), 'end': (-21.160, -7.650, 9.500)},
+    {'length': 1.552, 'start': (16.903, 14.850, 9.500), 'end': (17.887, 13.650, 9.500)},
+    {'length': 1.552, 'start': (-16.903, -14.850, 9.500), 'end': (-17.887, -13.650, 9.500)},
+    {'length': 2.103, 'start': (-16.771, 15.000, 16.000), 'end': (-15.297, 16.500, 16.000)},
+    {'length': 44.091, 'start': (22.045, 4.500, 16.000), 'end': (-22.045, 4.500, 16.000)},
+    {'length': 6.502, 'start': (22.319, 2.850, 9.500), 'end': (22.299, 3.000, 16.000)},
+    {'length': 1.872, 'start': (-13.698, -17.850, 9.500), 'end': (-15.134, -16.650, 9.500)},
+    {'length': 6.503, 'start': (-16.903, 14.850, 9.500), 'end': (-16.771, 15.000, 16.000)},
+    {'length': 1.522, 'start': (22.299, -3.000, 16.000), 'end': (22.045, -4.500, 16.000)},
+    {'length': 6.502, 'start': (22.450, -1.500, 16.000), 'end': (22.439, -1.650, 9.500)},
+    {'length': 6.502, 'start': (-20.686, 8.850, 9.500), 'end': (-20.622, 9.000, 16.000)},
+    {'length': 44.598, 'start': (22.299, -3.000, 16.000), 'end': (-22.299, -3.000, 16.000)},
+    {'length': 41.243, 'start': (20.622, 9.000, 16.000), 'end': (-20.622, 9.000, 16.000)},
+    {'length': 33.807, 'start': (16.903, -14.850, 9.500), 'end': (-16.903, -14.850, 9.500)},
+    {'length': 1.290, 'start': (-21.160, 7.650, 9.500), 'end': (-20.686, 8.850, 9.500)},
+    {'length': 6.502, 'start': (-22.014, -4.650, 9.500), 'end': (-22.045, -4.500, 16.000)},
+    {'length': 6.504, 'start': (15.297, -16.500, 16.000), 'end': (15.134, -16.650, 9.500)},
+    {'length': 6.502, 'start': (21.685, 6.000, 16.000), 'end': (21.726, 5.850, 9.500)},
+    {'length': 30.267, 'start': (15.134, -16.650, 9.500), 'end': (-15.134, -16.650, 9.500)},
+    {'length': 1.386, 'start': (19.820, -10.650, 9.500), 'end': (19.127, -11.850, 9.500)},
+    {'length': 6.502, 'start': (-19.820, -10.650, 9.500), 'end': (-19.900, -10.500, 16.000)},
+    {'length': 33.541, 'start': (16.771, 15.000, 16.000), 'end': (-16.771, 15.000, 16.000)},
+    {'length': 44.638, 'start': (-22.319, 2.850, 9.500), 'end': (22.319, 2.850, 9.500)},
+    {'length': 6.502, 'start': (22.045, -4.500, 16.000), 'end': (22.014, -4.650, 9.500)},
+    {'length': 1.573, 'start': (21.213, 7.500, 16.000), 'end': (21.685, 6.000, 16.000)},
+    {'length': 41.243, 'start': (20.622, -9.000, 16.000), 'end': (-20.622, -9.000, 16.000)},
+    {'length': 43.370, 'start': (21.685, 6.000, 16.000), 'end': (-21.685, 6.000, 16.000)},
+    {'length': 1.234, 'start': (-21.726, -5.850, 9.500), 'end': (-22.014, -4.650, 9.500)},
+    {'length': 6.504, 'start': (-15.297, 16.500, 16.000), 'end': (-15.134, 16.650, 9.500)},
+    {'length': 6.502, 'start': (21.160, 7.650, 9.500), 'end': (21.213, 7.500, 16.000)},
+    {'length': 1.552, 'start': (17.887, -13.650, 9.500), 'end': (16.903, -14.850, 9.500)},
+    {'length': 6.504, 'start': (15.134, 16.650, 9.500), 'end': (15.297, 16.500, 16.000)},
+    {'length': 6.505, 'start': (13.698, -17.850, 9.500), 'end': (13.500, -18.000, 16.000)},
+    {'length': 1.522, 'start': (-22.045, -4.500, 16.000), 'end': (-22.299, -3.000, 16.000)},
+    {'length': 1.386, 'start': (19.127, 11.850, 9.500), 'end': (19.820, 10.650, 9.500)},
+    {'length': 6.502, 'start': (-20.622, -9.000, 16.000), 'end': (-20.686, -8.850, 9.500)},
+    {'length': 1.872, 'start': (13.698, 17.850, 9.500), 'end': (15.134, 16.650, 9.500)},
+    {'length': 1.573, 'start': (-21.213, -7.500, 16.000), 'end': (-21.685, -6.000, 16.000)},
+    {'length': 1.552, 'start': (-17.887, 13.650, 9.500), 'end': (-16.903, 14.850, 9.500)},
+    {'length': 6.502, 'start': (-22.299, 3.000, 16.000), 'end': (-22.319, 2.850, 9.500)},
+    {'length': 6.503, 'start': (-16.771, -15.000, 16.000), 'end': (-16.903, -14.850, 9.500)},
+    {'length': 1.290, 'start': (20.686, 8.850, 9.500), 'end': (21.160, 7.650, 9.500)},
+    {'length': 1.665, 'start': (-19.900, -10.500, 16.000), 'end': (-20.622, -9.000, 16.000)},
+    {'length': 1.290, 'start': (21.160, -7.650, 9.500), 'end': (20.686, -8.850, 9.500)},
+    {'length': 39.799, 'start': (19.900, -10.500, 16.000), 'end': (-19.900, -10.500, 16.000)},
+    {'length': 1.665, 'start': (-20.622, 9.000, 16.000), 'end': (-19.900, 10.500, 16.000)},
+    {'length': 3.002, 'start': (22.450, 1.500, 16.000), 'end': (22.450, -1.500, 16.000)},
+    {'length': 28.958, 'start': (13.500, -18.000, 16.000), 'end': (-13.500, -18.000, 16.000)},
+    {'length': 1.872, 'start': (-15.134, 16.650, 9.500), 'end': (-13.698, 17.850, 9.500)},
+    {'length': 1.822, 'start': (19.033, -12.000, 16.000), 'end': (18.000, -13.500, 16.000)},
+    {'length': 1.206, 'start': (-22.319, -2.850, 9.500), 'end': (-22.439, -1.650, 9.500)},
+    {'length': 39.640, 'start': (19.820, -10.650, 9.500), 'end': (-19.820, -10.650, 9.500)},
+    {'length': 44.638, 'start': (-22.319, -2.850, 9.500), 'end': (22.319, -2.850, 9.500)},
+    {'length': 6.502, 'start': (20.622, 9.000, 16.000), 'end': (20.686, 8.850, 9.500)},
+    {'length': 6.502, 'start': (19.820, 10.650, 9.500), 'end': (19.900, 10.500, 16.000)},
+    {'length': 1.234, 'start': (-22.014, 4.650, 9.500), 'end': (-21.726, 5.850, 9.500)},
+    {'length': 6.502, 'start': (21.213, -7.500, 16.000), 'end': (21.160, -7.650, 9.500)},
+    {'length': 6.502, 'start': (19.033, 12.000, 16.000), 'end': (19.127, 11.850, 9.500)},
+    {'length': 38.066, 'start': (19.033, -12.000, 16.000), 'end': (-19.033, -12.000, 16.000)},
+    {'length': 6.502, 'start': (22.450, 1.500, 16.000), 'end': (22.439, 1.650, 9.500)},
+    {'length': 1.234, 'start': (22.014, -4.650, 9.500), 'end': (21.726, -5.850, 9.500)},
+    {'length': 6.503, 'start': (16.771, 15.000, 16.000), 'end': (16.903, 14.850, 9.500)},
+    {'length': 2.103, 'start': (15.297, 16.500, 16.000), 'end': (16.771, 15.000, 16.000)},
+    {'length': 44.029, 'start': (22.014, -4.650, 9.500), 'end': (-22.014, -4.650, 9.500)},
+    {'length': 44.029, 'start': (22.014, 4.650, 9.500), 'end': (-22.014, 4.650, 9.500)},
+    {'length': 1.206, 'start': (22.439, 1.650, 9.500), 'end': (22.319, 2.850, 9.500)},
+    {'length': 44.091, 'start': (22.045, -4.500, 16.000), 'end': (-22.045, -4.500, 16.000)},
+    {'length': 35.773, 'start': (17.887, 13.650, 9.500), 'end': (-17.887, 13.650, 9.500)},
+    {'length': 27.000, 'start': (13.500, 18.000, 16.000), 'end': (-13.500, 18.000, 16.000)},
+    {'length': 6.505, 'start': (-13.698, 17.850, 9.500), 'end': (-13.500, 18.000, 16.000)},
+    {'length': 3.002, 'start': (-22.450, -1.500, 16.000), 'end': (-22.450, 1.500, 16.000)},
+    {'length': 44.879, 'start': (-22.439, -1.650, 9.500), 'end': (22.439, -1.650, 9.500)},
+    {'length': 6.505, 'start': (13.500, 18.000, 16.000), 'end': (13.698, 17.850, 9.500)},
+    {'length': 6.502, 'start': (19.900, -10.500, 16.000), 'end': (19.820, -10.650, 9.500)},
+    {'length': 27.000, 'start': (13.500, -18.000, 16.000), 'end': (-13.500, -18.000, 16.000)},
+    {'length': 38.253, 'start': (19.127, 11.850, 9.500), 'end': (-19.127, 11.850, 9.500)},
+    {'length': 1.386, 'start': (-19.127, -11.850, 9.500), 'end': (-19.820, -10.650, 9.500)},
+    {'length': 6.502, 'start': (-22.299, -3.000, 16.000), 'end': (-22.319, -2.850, 9.500)},
+    {'length': 1.665, 'start': (19.900, 10.500, 16.000), 'end': (20.622, 9.000, 16.000)},
+    {'length': 1.872, 'start': (15.134, -16.650, 9.500), 'end': (13.698, -17.850, 9.500)},
+    {'length': 75.398, 'start': (0.000, 12.000, 5.000), 'end': (0.000, 12.000, 5.000)},
+    {'length': 1.522, 'start': (22.045, 4.500, 16.000), 'end': (22.299, 3.000, 16.000)},
+    {'length': 43.370, 'start': (21.685, -6.000, 16.000), 'end': (-21.685, -6.000, 16.000)},
+    {'length': 28.958, 'start': (-13.500, 18.000, 16.000), 'end': (13.500, 18.000, 16.000)},
+    {'length': 44.879, 'start': (-22.439, 1.650, 9.500), 'end': (22.439, 1.650, 9.500)},
+    {'length': 6.502, 'start': (-19.033, -12.000, 16.000), 'end': (-19.127, -11.850, 9.500)},
+    {'length': 30.594, 'start': (15.297, 16.500, 16.000), 'end': (-15.297, 16.500, 16.000)},
+    {'length': 33.541, 'start': (16.771, -15.000, 16.000), 'end': (-16.771, -15.000, 16.000)},
+    {'length': 1.665, 'start': (20.622, -9.000, 16.000), 'end': (19.900, -10.500, 16.000)},
+    {'length': 1.822, 'start': (-19.033, 12.000, 16.000), 'end': (-18.000, 13.500, 16.000)},
+    {'length': 1.822, 'start': (-18.000, -13.500, 16.000), 'end': (-19.033, -12.000, 16.000)},
+    {'length': 1.386, 'start': (-19.820, 10.650, 9.500), 'end': (-19.127, 11.850, 9.500)},
+    {'length': 6.503, 'start': (17.887, 13.650, 9.500), 'end': (18.000, 13.500, 16.000)},
+    {'length': 41.373, 'start': (20.686, -8.850, 9.500), 'end': (-20.686, -8.850, 9.500)},
+    {'length': 6.502, 'start': (-19.127, 11.850, 9.500), 'end': (-19.033, 12.000, 16.000)},
+    {'length': 1.206, 'start': (22.439, -1.650, 9.500), 'end': (22.319, -2.850, 9.500)},
+    {'length': 36.000, 'start': (18.000, 13.500, 16.000), 'end': (-18.000, 13.500, 16.000)},
+    {'length': 27.395, 'start': (13.698, -17.850, 9.500), 'end': (-13.698, -17.850, 9.500)},
+    {'length': 141.372, 'start': (0.000, 22.500, 5.000), 'end': (0.000, 22.500, 5.000)},
+    {'length': 1.822, 'start': (18.000, 13.500, 16.000), 'end': (19.033, 12.000, 16.000)},
+    {'length': 6.502, 'start': (21.726, -5.850, 9.500), 'end': (21.685, -6.000, 16.000)},
+    {'length': 2.103, 'start': (-15.297, -16.500, 16.000), 'end': (-16.771, -15.000, 16.000)},
+    {'length': 6.502, 'start': (-22.439, 1.650, 9.500), 'end': (-22.450, 1.500, 16.000)},
+    {'length': 2.103, 'start': (16.771, -15.000, 16.000), 'end': (15.297, -16.500, 16.000)},
+    {'length': 6.503, 'start': (-18.000, 13.500, 16.000), 'end': (-17.887, 13.650, 9.500)},
+    {'length': 6.502, 'start': (19.127, -11.850, 9.500), 'end': (19.033, -12.000, 16.000)},
+    {'length': 1.573, 'start': (21.685, -6.000, 16.000), 'end': (21.213, -7.500, 16.000)},
+    {'length': 6.502, 'start': (-21.726, 5.850, 9.500), 'end': (-21.685, 6.000, 16.000)},
+    {'length': 42.319, 'start': (21.160, 7.650, 9.500), 'end': (-21.160, 7.650, 9.500)},
+    {'length': 6.503, 'start': (16.903, -14.850, 9.500), 'end': (16.771, -15.000, 16.000)},
+    {'length': 38.066, 'start': (19.033, 12.000, 16.000), 'end': (-19.033, 12.000, 16.000)},
+    {'length': 38.253, 'start': (19.127, -11.850, 9.500), 'end': (-19.127, -11.850, 9.500)},
+    {'length': 1.206, 'start': (-22.319, 2.850, 9.500), 'end': (-22.439, 1.650, 9.500)},
+    {'length': 6.503, 'start': (18.000, -13.500, 16.000), 'end': (17.887, -13.650, 9.500)},
+    {'length': 6.502, 'start': (-21.160, -7.650, 9.500), 'end': (-21.213, -7.500, 16.000)},
+    {'length': 6.505, 'start': (-13.500, -18.000, 16.000), 'end': (-13.698, -17.850, 9.500)},
+    {'length': 6.502, 'start': (-22.439, -1.650, 9.500), 'end': (-22.450, -1.500, 16.000)},
+    {'length': 6.502, 'start': (-21.213, 7.500, 16.000), 'end': (-21.160, 7.650, 9.500)},
+    {'length': 43.452, 'start': (21.726, -5.850, 9.500), 'end': (-21.726, -5.850, 9.500)},
+    {'length': 44.900, 'start': (22.450, -1.500, 16.000), 'end': (-22.450, -1.500, 16.000)},
+    {'length': 6.502, 'start': (-21.685, -6.000, 16.000), 'end': (-21.726, -5.850, 9.500)},
+    {'length': 6.504, 'start': (-15.134, -16.650, 9.500), 'end': (-15.297, -16.500, 16.000)},
+    {'length': 39.799, 'start': (19.900, 10.500, 16.000), 'end': (-19.900, 10.500, 16.000)},
+    {'length': 6.502, 'start': (-22.045, 4.500, 16.000), 'end': (-22.014, 4.650, 9.500)},
+    {'length': 30.594, 'start': (15.297, -16.500, 16.000), 'end': (-15.297, -16.500, 16.000)},
+    {'length': 33.807, 'start': (16.903, 14.850, 9.500), 'end': (-16.903, 14.850, 9.500)},
+    {'length': 6.502, 'start': (20.686, -8.850, 9.500), 'end': (20.622, -9.000, 16.000)},
+    {'length': 44.598, 'start': (22.299, 3.000, 16.000), 'end': (-22.299, 3.000, 16.000)},
+    {'length': 35.773, 'start': (17.887, -13.650, 9.500), 'end': (-17.887, -13.650, 9.500)},
+    {'length': 42.319, 'start': (21.160, -7.650, 9.500), 'end': (-21.160, -7.650, 9.500)},
+    {'length': 1.234, 'start': (21.726, 5.850, 9.500), 'end': (22.014, 4.650, 9.500)},
+    {'length': 27.395, 'start': (13.698, 17.850, 9.500), 'end': (-13.698, 17.850, 9.500)},
+    {'length': 36.000, 'start': (18.000, -13.500, 16.000), 'end': (-18.000, -13.500, 16.000)},
+    {'length': 6.502, 'start': (22.014, 4.650, 9.500), 'end': (22.045, 4.500, 16.000)},
+    {'length': 1.522, 'start': (-22.299, 3.000, 16.000), 'end': (-22.045, 4.500, 16.000)},
+    {'length': 6.503, 'start': (-17.887, -13.650, 9.500), 'end': (-18.000, -13.500, 16.000)},
+    {'length': 30.267, 'start': (15.134, 16.650, 9.500), 'end': (-15.134, 16.650, 9.500)},
+]
+
 # Konvertiert Edge-Typen in lesbare Strings
 def edge_type_to_string(edge_type):
     edge_type_mapping = {
@@ -808,6 +959,88 @@ def get_pattern_feature_count(workPart, lw):
    # lw.WriteLine(f"Pattern Feature mit spezifischen Dimensionen kommt {pattern_count} mal vor.")
     return pattern_count
 
+def extract_edge_positions(workPart, lw):
+    """
+    Extrahiert die Positionen aller Kanten aus dem Teil.
+    """
+    edge_positions = []  # Liste zur Speicherung der Positionen der Kanten
+
+    for body in workPart.Bodies:
+        for edge in body.GetEdges():
+            vertices = edge.GetVertices()
+            start_point = vertices[0]
+            end_point = vertices[1]
+            edge_length = edge.GetLength()
+            edge_type = edge.SolidEdgeType
+            
+            edge_positions.append({
+                'start': (start_point.X, start_point.Y, start_point.Z),
+                'end': (end_point.X, end_point.Y, end_point.Z),
+                'length': edge_length,
+                'type': edge_type
+            })
+    
+    return edge_positions
+
+def calculate_relative_positions(edges):
+    """
+    Berechnet die relativen Positionen der Kanten zueinander.
+    """
+    relative_positions = []
+    for (edge1_idx, edge1), (edge2_idx, edge2) in combinations(enumerate(edges), 2):
+        start_distance = calculate_distance(edge1['start'], edge2['start'])
+        end_distance = calculate_distance(edge1['end'], edge2['end'])
+        relative_positions.append((start_distance, end_distance))
+    return relative_positions
+
+
+def calculate_distance(point1, point2):
+    """
+    Berechnet die euklidische Distanz zwischen zwei Punkten.
+    """
+    return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2 + (point1[2] - point2[2])**2)
+
+def compare_relative_positions(reference_positions, test_positions, tolerance=1e-5):
+    """
+    Vergleicht die relativen Positionen der Referenzkanten mit den Testkanten.
+    """
+    if len(reference_positions) != len(test_positions):
+        return False
+
+    for (ref_start_dist, ref_end_dist), (test_start_dist, test_end_dist) in zip(reference_positions, test_positions):
+        if not (math.isclose(ref_start_dist, test_start_dist, rel_tol=tolerance) and math.isclose(ref_end_dist, test_end_dist, rel_tol=tolerance)):
+            return False
+
+    return True
+
+def check_relative_positions(reference_edges, test_edges, tolerance=1e-1):
+    """
+    Überprüft, ob die relativen Positionen der Kanten im Testkörper mit der Referenz übereinstimmen.
+    """
+    reference_positions = calculate_relative_positions(reference_edges)
+    test_positions = calculate_relative_positions(test_edges)
+
+    return compare_relative_positions(reference_positions, test_positions, tolerance)
+
+def check_edges_against_reference(workPart, lw):
+    """
+    Überprüft die Kantenpositionen des aktuellen Teils gegen die Referenzkanten.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Überprüfung der Kantenpositionen gegen Referenzkanten")
+    lw.WriteLine("==================================================")
+
+    # Extrahiert die aktuellen Kantenpositionen aus dem Teil
+    edge_positions = extract_edge_positions(workPart, lw)
+    
+    # Prüft die relativen Positionen gegen die Referenzkanten
+    is_matching = check_relative_positions(REFERENCE_EDGES_UE1, edge_positions)
+
+    if is_matching:
+        lw.WriteLine("Die Kantenpositionen stimmen mit den Referenzkanten überein.")
+    else:
+        lw.WriteLine("Die Kantenpositionen stimmen NICHT mit den Referenzkanten überein.")
+
 def extract_line_positions(workPart, lw):
     """
     Extrahiert die Positionen aller Linien aus dem Teil.
@@ -842,9 +1075,7 @@ def extract_line_positions(workPart, lw):
             lw.WriteLine(f"    Endpunkt - ({end_point.X:.3f}, {end_point.Y:.3f}, {end_point.Z:.3f})")
 
     lw.WriteLine(f"Anzahl der Kanten gefunden: {len(edge_positions)}")
-    #for idx, edge in enumerate(edge_positions, start=1):
-     #   lw.WriteLine(f"Kante {idx}: Typ - {edge['type']}, Start - {edge['start']}, End - {edge['end']}, Länge - {edge['length']:.3f}")
-
+    
     return edge_positions
 
 #Ausgabe Übung 1
@@ -923,6 +1154,8 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
     
     # Extrahiere die Positionen der Linien aus der Musterlösung
     extract_line_positions(workPart, lw)
+
+    check_edges_against_reference(workPart, lw)
     
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
