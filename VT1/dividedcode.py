@@ -808,6 +808,44 @@ def get_pattern_feature_count(workPart, lw):
    # lw.WriteLine(f"Pattern Feature mit spezifischen Dimensionen kommt {pattern_count} mal vor.")
     return pattern_count
 
+def extract_line_positions(workPart, lw):
+    """
+    Extrahiert die Positionen aller Linien aus dem Teil.
+    """
+    lw.WriteLine("==================================================")
+    lw.WriteLine("Extrahieren der Positionen aller Linien im Teil")
+    lw.WriteLine("==================================================")
+
+    edge_positions = []  # Liste zur Speicherung der Positionen der Kanten
+
+    # Zählen der Körper
+    body_count = sum(1 for _ in workPart.Bodies)
+    lw.WriteLine(f"Anzahl der Körper: {body_count}")
+
+    for body_idx, body in enumerate(workPart.Bodies, start=1):
+        lw.WriteLine(f"Körper {body_idx} von {body_count}")
+        for edge_idx, edge in enumerate(body.GetEdges(), start=1):
+            vertices = edge.GetVertices()
+            start_point = vertices[0]
+            end_point = vertices[1]
+            edge_length = edge.GetLength()
+            edge_type = edge.SolidEdgeType
+            
+            edge_positions.append({
+                'start': (start_point.X, start_point.Y, start_point.Z),
+                'end': (end_point.X, end_point.Y, end_point.Z),
+                'length': edge_length,
+                'type': edge_type
+            })
+            lw.WriteLine(f"  Kante {edge_idx}: Typ - {edge_type}, Länge - {edge_length:.3f}")
+            lw.WriteLine(f"    Startpunkt - ({start_point.X:.3f}, {start_point.Y:.3f}, {start_point.Z:.3f})")
+            lw.WriteLine(f"    Endpunkt - ({end_point.X:.3f}, {end_point.Y:.3f}, {end_point.Z:.3f})")
+
+    lw.WriteLine(f"Anzahl der Kanten gefunden: {len(edge_positions)}")
+    #for idx, edge in enumerate(edge_positions, start=1):
+     #   lw.WriteLine(f"Kante {idx}: Typ - {edge['type']}, Start - {edge['start']}, End - {edge['end']}, Länge - {edge['length']:.3f}")
+
+    return edge_positions
 
 #Ausgabe Übung 1
 # Listet Merkmale und Geometrien auf
@@ -882,6 +920,10 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
     # Muster-Features zählen
     total_patterns = get_pattern_feature_count(workPart, lw)
     check_faces_against_reference_ue1(workPart, lw)
+    
+    # Extrahiere die Positionen der Linien aus der Musterlösung
+    extract_line_positions(workPart, lw)
+    
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
