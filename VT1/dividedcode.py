@@ -397,6 +397,16 @@ def check_specific_edge_lengths(all_edges):
     found_lengths = [edge.GetLength() for edge in all_edges]
     return all(any(math.isclose(length, required, rel_tol=1e-5) for length in found_lengths) for required in required_lengths)
 
+# Funktion zur Überprüfung der spezifischen Kreiseigenschaften (für die Alternativlösung)
+def check_circular_features(circles):
+    # Definierte Radien für die Alternative Lösung
+    required_radii = [12.0, 22.5]
+
+    found_radii = [circle.Radius for circle in circles]
+
+    # Prüfen, ob alle benötigten Radien vorhanden sind, Reihenfolge ist egal
+    return all(any(math.isclose(found, required, rel_tol=1e-5) for found in found_radii) for required in required_radii)
+
 def check_specific_edge_lengths2(all_edges):
     required_lengths = [444.000, 17.000, 126.000, 0.500, 10.000, 2.000, 21.000, 0.500, 18.000, 5.000, 170.000, 2.500, 12.000, 5.000, 0.500, 5.000, 19.500, 65.000, 2.500, 17.000]
     found_lengths = [edge.GetLength() for edge in all_edges]
@@ -913,8 +923,6 @@ def count_pattern_and_mirror_features(workPart, lw):
     mirror_count = 0
 
     for feature in workPart.Features:
-        feature_name = feature.Name if feature.Name else "Unnamed"
-        lw.WriteLine(f"Feature Name: {feature_name}")  # Debugging-Ausgabe
         if is_pattern_feature(feature):
             lw.WriteLine(f"Pattern Feature gefunden: {feature.JournalIdentifier}")  # Debugging-Ausgabe
             pattern_count += 1
@@ -1070,9 +1078,9 @@ def extract_line_positions(workPart, lw):
                 'length': edge_length,
                 'type': edge_type
             })
-            lw.WriteLine(f"  Kante {edge_idx}: Typ - {edge_type}, Länge - {edge_length:.3f}")
-            lw.WriteLine(f"    Startpunkt - ({start_point.X:.3f}, {start_point.Y:.3f}, {start_point.Z:.3f})")
-            lw.WriteLine(f"    Endpunkt - ({end_point.X:.3f}, {end_point.Y:.3f}, {end_point.Z:.3f})")
+       #     lw.WriteLine(f"  Kante {edge_idx}: Typ - {edge_type}, Länge - {edge_length:.3f}")
+        #    lw.WriteLine(f"    Startpunkt - ({start_point.X:.3f}, {start_point.Y:.3f}, {start_point.Z:.3f})")
+         #   lw.WriteLine(f"    Endpunkt - ({end_point.X:.3f}, {end_point.Y:.3f}, {end_point.Z:.3f})")
 
     lw.WriteLine(f"Anzahl der Kanten gefunden: {len(edge_positions)}")
     
@@ -1093,8 +1101,8 @@ def list_features_and_geometries_ue1(theSession, workPart):
         body_count += 1
     lw.WriteLine("Gesamtanzahl der Körper im Teil: " + str(body_count))
 
-    for body_idx, body in enumerate(workPart.Bodies, start=1):
-        print_body_details(lw, body, body_idx, body_count, workPart)
+    #for body_idx, body in enumerate(workPart.Bodies, start=1):
+     #   print_body_details(lw, body, body_idx, body_count, workPart)
     
     lw.WriteLine("=" * 50)
     lw.WriteLine("Feature-Analyse:")
@@ -1115,6 +1123,14 @@ def list_features_and_geometries_ue1(theSession, workPart):
 
     lw.Close()
 
+# Funktion zur Verarbeitung der Geometrie
+def process_geometry(curve, all_edges, circles):
+    if isinstance(curve, NXOpen.Line):
+        all_edges.append(curve)
+    elif isinstance(curve, NXOpen.Arc):
+        circles.append(curve)
+    elif isinstance(curve, NXOpen.Circle):
+        circles.append(curve)
 
 # Listet Geometrieeigenschaften in Skizzen auf
 def list_geometry_properties_in_sketches_ue1(theSession, workPart):
@@ -1124,10 +1140,13 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
     lw.WriteLine("=" * 50)
     lw.WriteLine("Analyse der Skizzen")
     lw.WriteLine("=" * 50)
-
+    
     # Variablen zur Erfassung des Zustands der Features über alle Skizzen hinweg
     rotations_feature_found = False
     pattern_feature_found = False
+    alternative_solution_found = False
+
+    all_circles = []
 
     for sketch_idx, sketch in enumerate(workPart.Sketches, start=1):
         lw.WriteLine(f"Skizze {sketch_idx}: {sketch.Name}")
@@ -1137,41 +1156,59 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
         for curve in sketch.GetAllGeometry():
             process_geometry(curve, all_edges, circles)
 
+        all_circles.extend(circles)
+
         # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
         if check_specific_edge_lengths(all_edges):
             rotations_feature_found = True
+    # Prüfung auf die Alternativlösung
+    if not rotations_feature_found:
+        alternative_solution_found = check_circular_features(all_circles)
+
         if check_pattern_feature(all_edges):
             pattern_feature_found = True
 
+        # Ausgabe der Linien (Edges)
         for edge in all_edges:
-            edge_type = "Linear" if isinstance(edge, NXOpen.Line) else "Circular" if isinstance(edge, NXOpen.Arc) else "Unbekannt"
-            lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - {edge_type}, Länge - {edge.GetLength():.3f}")
+            lw.WriteLine(f"    Kante {all_edges.index(edge) + 1}: Typ - Linear, Länge - {edge.GetLength():.3f}")
+        
+        # Ausgabe der Kreise (Circles)
+        for circle in circles:
+            lw.WriteLine(f"    Kreis {circles.index(circle) + 1}: Radius - {circle.Radius:.3f}, Durchmesser - {2 * circle.Radius:.3f}, Umfang - {2 * 3.141592653589793 * circle.Radius:.3f}")
+        
         lw.WriteLine("\n")
 
     # Muster-Features zählen
     total_patterns = get_pattern_feature_count(workPart, lw)
     check_faces_against_reference_ue1(workPart, lw)
     
-    # Extrahiere die Positionen der Linien aus der Musterlösung
-    extract_line_positions(workPart, lw)
-
-    check_edges_against_reference(workPart, lw)
-    
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Grundlagenprüfung: {EXERCISE_NUMBER}")
     lw.WriteLine("=" * 50)
-    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'JA, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
-    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'JA, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'Wie in der Musterlösung, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
+    lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'Wie in der Musterlösung, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
     lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
     
+    if not rotations_feature_found and alternative_solution_found:
+        lw.WriteLine(f"Prüfung nach Alternativlösungen hat folgendes ergeben: Zwei Kreise Extrudiert")
+
+
     # Zählen von Pattern- und Mirror-Features
     total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
 
-    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
-    lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
+    #lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
+    #lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
     lw.WriteLine("\n")
+
+    # Extrahiere die Positionen der Linien aus der Musterlösung
+    extract_line_positions(workPart, lw)
+    check_edges_against_reference(workPart, lw)
+
     lw.Close()
+
+
+
 
 #Ab hier: Vertiefungsübung 1
 # Listet Merkmale und Geometrien auf
