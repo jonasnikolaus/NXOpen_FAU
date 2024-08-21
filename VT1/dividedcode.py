@@ -636,6 +636,8 @@ def check_faces_against_reference_ue1(workPart, lw):
     lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
     lw.WriteLine("Überprüfung abgeschlossen.")
 
+    return found_reference_faces
+
 def check_faces_against_reference_vt1(workPart, lw):
     """
     Überprüft das Vorhandensein von Flächen im vorliegenden Körper gegen eine Musterlösung.
@@ -724,6 +726,8 @@ def check_faces_against_reference_vt1(workPart, lw):
 
     lw.WriteLine(f"Es sind {found_reference_faces} von {total_reference_faces} erwarteten Flächen vorhanden.")
     lw.WriteLine("Überprüfung abgeschlossen.")
+
+    return found_reference_faces
 
 def check_faces_against_reference_ue2(workPart, lw):
     """
@@ -1161,9 +1165,6 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
         # Überprüfung der Kantenlängen für jedes Feature innerhalb jeder Skizze
         if check_specific_edge_lengths(all_edges):
             rotations_feature_found = True
-    # Prüfung auf die Alternativlösung
-    if not rotations_feature_found:
-        alternative_solution_found = check_circular_features(all_circles)
 
         if check_pattern_feature(all_edges):
             pattern_feature_found = True
@@ -1178,9 +1179,13 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
         
         lw.WriteLine("\n")
 
-    # Muster-Features zählen
-    total_patterns = get_pattern_feature_count(workPart, lw)
-    check_faces_against_reference_ue1(workPart, lw)
+    # Prüfung auf die Alternativlösung
+    if not rotations_feature_found:
+        alternative_solution_found = check_circular_features(all_circles)
+
+
+    # Überprüfung der Flächen nur einmal durchführen
+    faces_check_result = check_faces_against_reference_ue1(workPart, lw)
     
     # Gesamtprüfung für alle Skizzen ausgeben
     lw.WriteLine("=" * 50)
@@ -1188,14 +1193,96 @@ def list_geometry_properties_in_sketches_ue1(theSession, workPart):
     lw.WriteLine("=" * 50)
     lw.WriteLine(f"Erzeugung Grundkörper:\nRotationsfeature: {'Wie in der Musterlösung, Skizze korrekt.' if rotations_feature_found else 'NEIN'}")
     lw.WriteLine(f"Erzeugung Muster:\nMusterfeature: {'Wie in der Musterlösung, Skizze korrekt.' if pattern_feature_found else 'NEIN'}")
-    lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
+   # lw.WriteLine(f"Anzahl der Muster-Features: {get_pattern_feature_count(workPart, lw)}{' --> Anzahl korrekt.' if total_patterns==12 else 'NEIN'}")
     
     if not rotations_feature_found and alternative_solution_found:
         lw.WriteLine(f"Prüfung nach Alternativlösungen hat folgendes ergeben: Zwei Kreise Extrudiert")
+    
+    lw.WriteLine(f"Rotationsfeature gefunden: {rotations_feature_found}")
+    lw.WriteLine(f"Anzahl der gefundenen Flächen: {faces_check_result}")
+
+    # Qualitätsanalyse nur ausgeben, wenn die Bedingungen erfüllt sind
+    if rotations_feature_found and faces_check_result == 53:
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Qualitäts-Analyse:")
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Modellierung entspricht genau den Anforderungen der Aufgabe.")
+        lw.WriteLine("")
+        lw.WriteLine("Es wurde das Rotations-Feature zur Erzeugung des Grundkörpers genutzt.")
+        lw.WriteLine("Alle 53 von 53 erwarteten Flächen sind vorhanden.")
+        lw.WriteLine("")
+        lw.WriteLine("Daraus lässt sich schließen, dass alle Anforderungen an den Aufbau des Modells erfüllt werden.")
+        lw.WriteLine("Insgesamt wird das Modell mit der vollen Punktzahl bewertet, da es genau den Prinzipien guter Konstruktionspraxis folgt.")
+        lw.WriteLine("")
+        lw.WriteLine("Bewertung: 10/10")
+
+    if alternative_solution_found and faces_check_result == 3:
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Qualitäts-Analyse:")
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Modellierung entspricht nicht den Anforderungen der Aufgabe.")
+        lw.WriteLine("")
+        lw.WriteLine("Anstatt einer Rotation einer einzigen Skizze wurden zwei Kreise extrudiert.")
+        lw.WriteLine("")
+        lw.WriteLine("Nur 3 von 53 erwarteten Flächen sind vorhanden.")
+        lw.WriteLine("Daraus lässt sich schließen, dass das Muster-Feature der Kühlrippen entweder gar nicht oder falsch verwendet wurde.")
+        lw.WriteLine("")
+        lw.WriteLine("Fehlende Flächen und geometrische Elemente weisen auf eine unzureichende Modellierung hin.")
+        lw.WriteLine("")
+        lw.WriteLine("Das Design durch zwei extrudierte Kreise führt zwar optisch zum gleichen Ergebnis, ist aber technisch weniger effizient.")
+        lw.WriteLine("Der Einsatz von zwei Extrusionen anstelle einer Rotationsfunktion führt zu einer unnötigen Komplexität im Modell.")
+        lw.WriteLine("")
+        lw.WriteLine("Das Design ist weniger robust, da es schwieriger ist, nachträglich Änderungen vorzunehmen oder das Modell für andere Zwecke zu modifizieren.")
+        lw.WriteLine("")
+        lw.WriteLine("Insgesamt wird das Modell durch die Verwendung der zwei extrudierten Kreise als nicht ausreichend bewertet, da es nicht den Prinzipien guter Konstruktionspraxis folgt. Außerdem fehlen wesentliche Bestandteile des Modells.")
+        lw.WriteLine("")
+        lw.WriteLine("Bewertung: 03/10")
+
+    if alternative_solution_found and faces_check_result == 53:
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Qualitäts-Analyse:")
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Modellierung entspricht nicht den Anforderungen der Aufgabe.")
+        lw.WriteLine("")
+        lw.WriteLine("Anstatt einer Rotation einer einzigen Skizze wurden zwei Kreise extrudiert.")
+        lw.WriteLine("")
+        lw.WriteLine("Alle 53 von 53 erwarteten Flächen sind vorhanden.")
+        lw.WriteLine("Daraus lässt sich schließen, dass alle Anforderungen an den Aufbau des Modells erfüllt werden.")
+        lw.WriteLine("")
+        lw.WriteLine("Das Design durch zwei extrudierte Kreise führt zwar optisch zum gleichen Ergebnis, ist aber technisch weniger effizient.")
+        lw.WriteLine("Der Einsatz von zwei Extrusionen anstelle einer Rotationsfunktion führt zu einer unnötigen Komplexität im Modell.")
+        lw.WriteLine("")
+        lw.WriteLine("Das Design ist weniger robust, da es schwieriger ist, nachträglich Änderungen vorzunehmen oder das Modell für andere Zwecke zu modifizieren.")
+        lw.WriteLine("")
+        lw.WriteLine("Insgesamt wird das Modell durch die Verwendung der zwei extrudierten Kreise als nicht ausreichend bewertet, da es nicht den Prinzipien guter Konstruktionspraxis folgt.")
+        lw.WriteLine("")
+        lw.WriteLine("Bewertung: 07/10")
+
+    if faces_check_result == 0:
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Qualitäts-Analyse:")
+        lw.WriteLine("==================================================")
+        lw.WriteLine("Modellierung entspricht nicht den Anforderungen der Aufgabe.")
+        lw.WriteLine("")
+        lw.WriteLine("Alle erwarteten Flächen fehlen oder sind falsch modelliert.")
+        lw.WriteLine("Dies deutet darauf hin, dass grundlegende Fehler bei der Modellierung gemacht wurden.")
+        lw.WriteLine("")
+        lw.WriteLine("Weder die Rotationsfunktion noch die richtigen Muster-Features wurden verwendet.")
+        lw.WriteLine("Die gesamte geometrische Struktur des Modells ist fehlerhaft.")
+        lw.WriteLine("")
+        lw.WriteLine("Das Design ist weit von den gestellten Anforderungen entfernt und kann nicht als funktional betrachtet werden.")
+        lw.WriteLine("Jegliche Nachbearbeitung des Modells wäre äußerst komplex und ineffizient.")
+        lw.WriteLine("")
+        lw.WriteLine("Insgesamt wird das Modell als ungenügend bewertet, da es nicht den Prinzipien guter Konstruktionspraxis folgt.")
+        lw.WriteLine("Es fehlen alle wesentlichen Bestandteile und die geometrische Integrität des Modells ist stark beeinträchtigt.")
+        lw.WriteLine("")
+        lw.WriteLine("Bewertung: 00/10")
 
 
     # Zählen von Pattern- und Mirror-Features
-    total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+ #   total_patterns, total_mirrors = count_pattern_and_mirror_features(workPart, lw)
+
+    lw.WriteLine("\n")
 
     #lw.WriteLine(f"Anzahl der Muster-Features: {total_patterns}")
     #lw.WriteLine(f"Anzahl der Mirror-Features: {total_mirrors}")
